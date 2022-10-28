@@ -2,13 +2,13 @@ package main
 
 import (
 	"html/template"
-	"net/http"
-
 	"moshack_2022/pkg/handlers"
 	"moshack_2022/pkg/items"
 	"moshack_2022/pkg/middleware"
 	"moshack_2022/pkg/session"
 	"moshack_2022/pkg/user"
+	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
 
@@ -19,6 +19,7 @@ import (
 )
 
 func main() {
+
 	templates := template.Must(template.ParseGlob("./templates/*"))
 
 	dsn := "host=localhost user=postgres password=3546"
@@ -35,6 +36,11 @@ func main() {
 	err = sqlDB.Ping()
 	if err != nil {
 		panic(err) // TODO
+	}
+
+	if len(os.Args) > 1 {
+		printJSON(ExcelParser(OpenExcel("test.xls"), db))
+		return
 	}
 
 	sm := session.NewSessionsManager()
