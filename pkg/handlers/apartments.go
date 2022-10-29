@@ -16,6 +16,7 @@ type ApartmentHandler struct {
 
 func (h *ApartmentHandler) Load(w http.ResponseWriter, r *http.Request) {
 	err := h.Tmpl.ExecuteTemplate(w, "loadxls.html", nil)
+	//err := h.Tmpl.ExecuteTemplate(w, "index.html", nil) // for testing
 	if err != nil {
 		http.Error(w, `Template errror`, http.StatusInternalServerError)
 		return
