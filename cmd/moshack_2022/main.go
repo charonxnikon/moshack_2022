@@ -2,6 +2,7 @@ package main
 
 import (
 	"html/template"
+	"moshack_2022/pkg/apartments"
 	"moshack_2022/pkg/handlers"
 	"moshack_2022/pkg/items"
 	"moshack_2022/pkg/middleware"
@@ -52,12 +53,19 @@ func main() {
 
 	userRepo := user.NewMemoryRepo(db)
 	itemsRepo := items.NewMemoryRepo()
+	apartmentRepo := apartments.NewApartmentRepo(db)
 
 	userHandler := &handlers.UserHandler{
 		Tmpl:     templates,
 		UserRepo: userRepo,
 		Logger:   logger,
 		Sessions: sm,
+	}
+
+	apartmentHandler := &handlers.ApartmentHandler{
+		Tmpl:          templates,
+		Logger:        logger,
+		ApartmentRepo: apartmentRepo,
 	}
 
 	handlers := &handlers.ItemsHandler{
@@ -72,6 +80,8 @@ func main() {
 	r.HandleFunc("/logout", userHandler.Logout).Methods("POST")
 	r.HandleFunc("/registration", userHandler.Registration).Methods("GET")
 	r.HandleFunc("/registration", userHandler.Register).Methods("POST")
+
+	r.HandleFunc("/loadxls", apartmentHandler.Load).Methods("GET")
 
 	r.HandleFunc("/items", handlers.List).Methods("GET")
 	r.HandleFunc("/items/new", handlers.AddForm).Methods("GET")

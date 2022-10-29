@@ -7,6 +7,7 @@
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+    <link rel="stylesheet" href="/src/css/style.css">
   </head>
   <body>
 	<div class="container">
@@ -31,9 +32,12 @@
       </tr>
 		{{end}}
     </tbody>
+
+    <div class="table" id="table"></div>
   </div>
-  
+
   <script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
+  <script src="./dist/table.js"></script>
 
   <script type="text/javascript">
   $('.do-delete').click(function() {
@@ -53,6 +57,6 @@
     });
   })
   </script>
-  
+
   </body>
 </html>

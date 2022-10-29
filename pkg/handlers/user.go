@@ -44,7 +44,8 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	sess, _ := h.Sessions.Create(w, u.ID)
 	h.Logger.Infof("created session for %v", sess.UserID)
-	http.Redirect(w, r, "/", 302)
+	//http.Redirect(w, r, "/", 302)
+	http.Redirect(w, r, "/loadxls", 302)
 }
 
 func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
