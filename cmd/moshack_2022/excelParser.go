@@ -9,14 +9,15 @@ import (
 	"strconv"
 )
 
-type apartmentJSON struct {
+type apartment struct {
 	Address string `json:"Address"`
-	Rooms   string `json:"Rooms"`
+	Rooms   int    `json:"Rooms"`
 }
 
-type apartmentDB struct {
-	Address string
-	Rooms   int
+type ExcelParser struct {
+	fileName   string
+	excelSheet *xls.Sheet
+	Apartments []apartment
 }
 
 var excelColumnNames = []string{"Адрес", "Комнаты"}
@@ -35,55 +36,47 @@ func OpenExcel(name string) *xls.Sheet {
 	return excelSheet
 }
 
-func insertApartmentToPSQL(json apartmentJSON, db *gorm.DB) {
-	rooms, err := strconv.Atoi(json.Rooms)
-	if err != nil {
-		panic(err)
-	}
-	newApartment := apartmentDB{
-		Address: json.Address,
-		Rooms:   rooms,
-	}
-	db.Table("apartments").Create(newApartment)
+func insertApartmentToPSQL(json *apartment, db *gorm.DB) {
+	db.Table("apartments").Create(*json)
 }
 
-func ExcelParser(excelSheet *xls.Sheet, db *gorm.DB) []apartmentJSON {
-	var resJSON []apartmentJSON
+func (excel *ExcelParser) parse(db *gorm.DB) *ExcelParser {
+
+	excel.excelSheet = OpenExcel(excel.fileName)
 
 	//TODO:добавить проверку соответсвия первой строки excelColumnNames
 	//TODO:Panic() в работе сервера так себе, пожалуй
 
-	for i := 1; i < excelSheet.GetNumberRows(); i++ {
-		row, err := excelSheet.GetRow(i)
+	for i := 1; i < excel.excelSheet.GetNumberRows(); i++ {
+		row, err := excel.excelSheet.GetRow(i)
 		if err != nil {
 			log.Panic(err)
 		}
 		cells := row.GetCols()
+		rooms, err := strconv.Atoi(cells[1].GetString())
+		if err != nil {
+			log.Panic(err)
+		}
 		if len(cells) != len(excelColumnNames) {
 			log.Panic("В екселе больше столбцов чем надо")
 		}
 
-		newJSON := apartmentJSON{
+		newJSON := apartment{
 			Address: cells[0].GetString(),
-			Rooms:   cells[1].GetString(),
+			Rooms:   rooms,
 		}
-		insertApartmentToPSQL(newJSON, db)
+		insertApartmentToPSQL(&newJSON, db)
 
-		resJSON = append(resJSON, apartmentJSON{
-			Address: cells[0].GetString(),
-			Rooms:   cells[1].GetString(),
-		})
+		(*excel).Apartments = append((*excel).Apartments, newJSON)
 	}
 
-	return resJSON
+	return excel
 }
 
-func printJSON(jsonArray []apartmentJSON) {
-	for _, el := range jsonArray {
-		str, err := json.MarshalIndent(el, "", "  ")
-		if err != nil {
-			log.Panic(err)
-		}
-		fmt.Println(string(str))
+func (excel *ExcelParser) marshalExcel() []byte {
+	type respBody struct {
+		Apartments []apartment `json:"apartments"`
 	}
+	data, _ := json.Marshal(respBody{Apartments: excel.Apartments})
+	return data
 }

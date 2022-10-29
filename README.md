@@ -19,3 +19,8 @@ go test -v -mod=vendor -coverpkg=./... ./...
  go run cmd/moshack_2022/*.go excel
 ЧТОБЫ ЗАПУСТЬ СЕРВЕР:
  go run cmd/moshack_2022/*.go
+ 
+ Я ЗАПУСКАЛ SQL СКРИПТ ТАК:
+ 	sudo cp SetDataBase.sql /var/lib/postgresql/SetDataBase.sql
+	sudo -i -u postgres
+	psql -U postgres -f SetDataBase.sql

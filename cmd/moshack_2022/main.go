@@ -39,7 +39,9 @@ func main() {
 	}
 
 	if len(os.Args) > 1 {
-		printJSON(ExcelParser(OpenExcel("test.xls"), db))
+		excel := ExcelParser{fileName: "test.xls"}
+		jsonData := excel.parse(db).marshalExcel()
+		println(string(jsonData))
 		return
 	}
 
