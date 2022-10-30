@@ -23,7 +23,7 @@
         <div class="main__cover"></div>
 
         <div class="main__content">
-            <form class="form" method="POST" action="/registration">
+            <form id="signup-form" class="form" method="POST" action="/registration">
                 <input type="text" class="form__input" name="login" id="login" value="" placeholder="Имя пользователя" required>
                 <input type="password" class="form__input" name="password" id="password" value="" placeholder="Пароль" required>
                 <input class="form__input" type="password" name="password-confirm" value="" placeholder="Повторите пароль" required>
@@ -31,6 +31,7 @@
             </form>
         </div>
     </main>
-</body>
 
+    <script src="/static/base/js/sign-up.js"></script>
+</body>
 </html>

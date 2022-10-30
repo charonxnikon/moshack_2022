@@ -1,17 +1,10 @@
 <template>
-    <div class="table__line" @click="handleClick">
+    <div class="table__line" :class="isActive ? 'table__line-active' : ''" @click="handleClick">
         <div class="table__line-fields">
-            <div class="table__field column-2in15"> {{ data.address }} </div>
-            <div class="table__field column-1in15"> {{ data.rooms }} </div>
-            <div class="table__field column-2in15"> {{ data.type }} </div>
-            <div class="table__field column-1in15"> {{ data.height }} </div>
-            <div class="table__field column-1in15"> {{ data.material }} </div>
-            <div class="table__field column-1in15"> {{ data.floor }} </div>
-            <div class="table__field column-1in15"> {{ data.area }} </div>
-            <div class="table__field column-1in15"> {{ data.kitchen }} </div>
-            <div class="table__field column-1in15"> {{ data.balcony }} </div>
-            <div class="table__field column-2in15"> {{ data.metro }} </div>
-            <div class="table__field column-2in15"> {{ data.condition }} </div>
+            <div v-for="(field, ind) in fields" :key="ind" class="table__field" :class="ind == 0 ? 'table__field-wide' : ''">
+                <span class="table__field-label">{{ field.fieldLabel }}</span>
+                <span class="table__field-info">{{ field.fieldData }}</span>
+            </div>
         </div>
 
         <div v-if="isActive" class="table__line-navigation">
@@ -35,6 +28,54 @@
             },
             makeActive: {
                 type: Function,
+            },
+        },
+
+        computed: {
+            fields: function () {
+                return Object.keys(this.data).map((key) => {
+                    var label = '';
+                    switch (key) {
+                        case 'address':
+                            label = 'Адрес';
+                            break;
+                        case 'rooms':
+                            label = 'Кол-во комнат';
+                            break;
+                        case 'height':
+                            label = 'Кол-во этажей';
+                            break;
+                        case 'floor':
+                            label = 'Этаж';
+                            break;
+                        case 'area':
+                            label = 'Площадь';
+                                break;
+                        case 'kitchen':
+                            label = 'Площадь кухни';
+                            break;
+                        case 'balcony':
+                            label = 'Балкон';
+                                break;
+                        case 'type':
+                            label = 'Тип';
+                            break;
+                        case 'material':
+                            label = 'Материал';
+                            break;
+                        case 'metro':
+                            label = 'Станция';
+                            break;
+                        case 'condition':
+                            label = 'Состояние';
+                                break;
+                    }
+
+                    return {
+                        fieldLabel: label,
+                        fieldData: this.data[key]
+                    }
+                });
             },
         },
 
