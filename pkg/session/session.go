@@ -13,7 +13,6 @@ type Session struct {
 }
 
 func NewSession(userID uint32) *Session {
-	// лучше генерировать из заданного алфавита, но так писать меньше и для учебного примера ОК
 	randID := make([]byte, 16)
 	rand.Read(randID)
 

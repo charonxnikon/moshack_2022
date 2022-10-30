@@ -9,6 +9,7 @@ import (
 	"moshack_2022/pkg/session"
 	"moshack_2022/pkg/user"
 	"net/http"
+
 	// "os"
 
 	"github.com/gorilla/mux"
@@ -80,7 +81,8 @@ func main() {
 	r.PathPrefix("/static/").Handler(fileServer)
 
 	r.HandleFunc("/", userHandler.Index).Methods("GET")
-	r.HandleFunc("/login", userHandler.Login).Methods("POST")
+	r.HandleFunc("/login", userHandler.LoginGET).Methods("GET")
+	r.HandleFunc("/login", userHandler.LoginPOST).Methods("POST")
 	r.HandleFunc("/logout", userHandler.Logout).Methods("POST")
 	r.HandleFunc("/registration", userHandler.Registration).Methods("GET")
 	r.HandleFunc("/registration", userHandler.Register).Methods("POST")

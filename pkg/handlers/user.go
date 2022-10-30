@@ -20,7 +20,8 @@ type UserHandler struct {
 func (h *UserHandler) Index(w http.ResponseWriter, r *http.Request) {
 	_, err := session.SessionFromContext(r.Context())
 	if err == nil {
-		http.Redirect(w, r, "/items", 302)
+		//http.Redirect(w, r, "/items", http.StatusFound)
+		http.Redirect(w, r, "/loadxls", http.StatusFound)
 		return
 	}
 
@@ -31,7 +32,14 @@ func (h *UserHandler) Index(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandler) LoginGET(w http.ResponseWriter, r *http.Request) {
+	err := h.Tmpl.ExecuteTemplate(w, "login.html", nil)
+	if err != nil {
+		http.Error(w, `Template errror`, http.StatusInternalServerError)
+	}
+}
+
+func (h *UserHandler) LoginPOST(w http.ResponseWriter, r *http.Request) {
 	u, err := h.UserRepo.Authorize(r.FormValue("login"), r.FormValue("password"))
 	if err == user.ErrNoUser {
 		http.Error(w, `no user`, http.StatusBadRequest)
@@ -44,13 +52,13 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	sess, _ := h.Sessions.Create(w, u.ID)
 	h.Logger.Infof("created session for %v", sess.UserID)
-	//http.Redirect(w, r, "/", 302)
-	http.Redirect(w, r, "/loadxls", 302)
+	//http.Redirect(w, r, "/", http.StatusFound)
+	http.Redirect(w, r, "/loadxls", http.StatusFound)
 }
 
 func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	h.Sessions.DestroyCurrent(w, r)
-	http.Redirect(w, r, "/", 302)
+	http.Redirect(w, r, "/", http.StatusFound)
 }
 
 func (h *UserHandler) Registration(w http.ResponseWriter, r *http.Request) {
@@ -68,5 +76,5 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/", 302)
+	http.Redirect(w, r, "/", http.StatusFound)
 }

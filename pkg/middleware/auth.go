@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"net/http"
 
 	"moshack_2022/pkg/session"
@@ -9,8 +8,9 @@ import (
 
 var (
 	noAuthUrls = map[string]struct{}{
-		"/login":        struct{}{},
-		"/registration": struct{}{},
+		"/login":                     struct{}{},
+		"/registration":              struct{}{},
+		"/static/base/css/style.css": struct{}{},
 	}
 	noSessUrls = map[string]struct{}{
 		"/": struct{}{},
@@ -19,7 +19,6 @@ var (
 
 func Auth(sm *session.SessionsManager, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//fmt.Println("auth middleware")
 		if _, ok := noAuthUrls[r.URL.Path]; ok {
 			next.ServeHTTP(w, r)
 			return
@@ -27,8 +26,7 @@ func Auth(sm *session.SessionsManager, next http.Handler) http.Handler {
 		sess, err := sm.Check(r)
 		_, canbeWithouthSess := noSessUrls[r.URL.Path]
 		if err != nil && !canbeWithouthSess {
-			fmt.Println("no auth")
-			http.Redirect(w, r, "/", 302)
+			http.Redirect(w, r, "/", http.StatusFound)
 			return
 		}
 		ctx := session.ContextWithSession(r.Context(), sess)
