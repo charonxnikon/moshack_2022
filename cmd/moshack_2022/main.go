@@ -9,7 +9,7 @@ import (
 	"moshack_2022/pkg/session"
 	"moshack_2022/pkg/user"
 	"net/http"
-	"os"
+	// "os"
 
 	"github.com/gorilla/mux"
 
@@ -39,12 +39,12 @@ func main() {
 		panic(err) // TODO
 	}
 
-	if len(os.Args) > 1 {
-		excel := ExcelParser{fileName: "test.xls"}
-		jsonData := excel.parse(db).marshalExcel()
-		println(string(jsonData))
-		return
-	}
+	// if len(os.Args) > 1 {
+	// 	excel := ExcelParser{fileName: "test.xls"}
+	// 	jsonData := excel.parse(db).marshalExcel()
+	// 	println(string(jsonData))
+	// 	return
+	// }
 
 	sm := session.NewSessionsManager()
 	zapLogger, _ := zap.NewProduction()

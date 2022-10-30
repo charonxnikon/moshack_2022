@@ -7,25 +7,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css"
-        integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+    <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css"integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous"> -->
+    <link rel="stylesheet" type="text/css" href="/static/base/css/style.css">
 </head>
 
 <body>
-    <div class="container">
-        <h1>LeadersApp registration</h1>
-        <form method="POST" action="/registration">
-            <div class="form-group">
-                <label for="login">Login</label>
-                <input type="text" class="form-control" name="login" id="login" value="">
-            </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" class="form-control" name="password" id="password" value="">
-            </div>
-            <button type="submit" class="btn btn-primary">Register</button>
-        </form>
-    </div>
+    <header class="header">
+        <div class="header__login">
+            <a href="/registration">Регистриция</a>
+            <a href="/login">Войти</a>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="main__cover"></div>
+
+        <div class="main__content">
+            <form class="form" method="POST" action="/registration">
+                <input type="text" class="form__input" name="login" id="login" value="" placeholder="Имя пользователя" required>
+                <input type="password" class="form__input" name="password" id="password" value="" placeholder="Пароль" required>
+                <input class="form__input" type="password" name="password-confirm" value="" placeholder="Повторите пароль" required>
+                <button type="submit" class="form__button">Регистриция</button>
+            </form>
+        </div>
+    </main>
 </body>
 
 </html>
