@@ -1,11 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<body>
-    <form action="/loadxls" method="post" enctype="multipart/form-data">
-        Image: <input type="file" name="my_file">
-        <input type="submit" value="Upload">
-    </form>
-</body>
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
+    <!-- Bootstrap CSS -->
+    <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous"> -->
+    <link rel="stylesheet" type="text/css" href="/static/base/css/style.css">
+    <link rel="stylesheet" type="text/css" href="/static/dist/css/table.css">
+</head>
+
+<body>
+    <header class="header">
+        <div class="header__login">
+            <a href="/registration">Регистриция</a>
+            <a href="/login">Войти</a>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="main__cover"></div>
+
+        <div class="main__content">
+            <form class="form" action="/loadxls" method="post" enctype="multipart/form-data">
+                <label for="upload-file" class="form__label">Excel-файл:</label>
+                <input id="upload-file" class="form__input" type="file" name="my_file">
+                <input class="form__button" type="submit" value="Загрузить">
+            </form>
+
+            <div class="table" id="table"></div>
+        </div>
+    </main>
+
+    <script src="/static/dist/table.min.js"></script>
+</body>
 </html>

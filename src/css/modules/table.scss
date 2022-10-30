@@ -1,0 +1,70 @@
+.table {
+    width: 100%;
+    overflow-x: scroll;
+    margin-top: 20px;
+
+    &__container {
+        width: 100%;
+        min-width: 1200px;
+        border: 1px solid #1b002f;
+    }
+
+    &__header {
+        width: 100%;
+        background-color: #1b002f;
+        color: #fff;
+
+        &-wrapper {
+            display: flex;
+            width: 90%;
+        }
+    }
+
+    &__line {
+        display: flex;
+        width: 100%;
+        background-color: #fff;
+
+        &-fields {
+            display: flex;
+            flex-basis: 90%;
+        }
+
+        &-navigation {
+            display: flex;
+            flex-basis: 10%;
+        }
+    }
+
+    &__field {
+        padding: 5px;
+        border-right: 1px solid #1b002f;
+        border-bottom: 1px solid #1b002f;
+
+        &-header {
+            border-color: #ff0076;
+        }
+    }
+
+    &__button {
+        margin: auto;
+        padding: 10px 15px;
+        background-color: #1b002f;
+        color: #ff0076;
+        border: none;
+        text-transform: uppercase;
+        font-weight: bold;
+    }
+}
+
+.column {
+    &-1in15 {
+        width: 6.666%;
+        flex-basis: 6.666%;
+    }
+
+    &-2in15 {
+        width: 13.333%;
+        flex-basis: 13.333%;
+    }
+}
