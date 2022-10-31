@@ -1,29 +1,30 @@
-{{define "layout"}}
 <!DOCTYPE html>
-<html lang="ru">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">>
-        <title>{{template "title" .}}</title>
-        <link rel="stylesheet" href="static/base/css/style.css">
+<html lang="en">
 
-        {{template "styles" .}}
-    </head>
-    <body>
-        <header class="header">
-            <div class="header__login">
-                <a href="login.html">Log in</a>
-            </div>
-        </header>
-        <main class="main">
-            <div class="main__cover"></div>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{{ template "title" . }}</title>
+    <link rel="stylesheet" href="static/base/css/style.css">
 
-            <div class="main__content">
-                {{template "main" .}}
-            </div>
-        </main>
+    {{ template "styles" . }}
+</head>
 
-        {{template "scripts" .}}
-    </body>
+<body>
+    <header class="header">
+        <div class="header__login">
+            <a href="login.html">Log in</a>
+        </div>
+    </header>
+    <main class="main">
+        <div class="main__cover"></div>
+
+        <div class="main__content">
+            {{ template "main" . }}
+        </div>
+    </main>
+
+    {{ template "scripts" . }}
+</body>
+
 </html>
-{{end}}

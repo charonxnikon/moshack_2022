@@ -5,8 +5,8 @@ import (
 	"html/template"
 	"net/http"
 
+	"moshack_2022/pkg/renderer"
 	"moshack_2022/pkg/session"
-	"moshack_2022/pkg/t_executor"
 	"moshack_2022/pkg/user"
 
 	"go.uber.org/zap"
@@ -27,7 +27,7 @@ func (h *UserHandler) Index(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = t_executor.ExecuteTemplate(h.Tmpl, "mainpage.html", w, nil)
+	err = renderer.Render(h.Tmpl, "mainpage.html", w, nil)
 	if err != nil {
 		errString := fmt.Sprintf("Template error: %s", err)
 		http.Error(w, errString, http.StatusInternalServerError)

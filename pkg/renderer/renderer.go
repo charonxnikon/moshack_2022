@@ -1,15 +1,16 @@
-package t_executor
+package renderer
 
 import (
 	"errors"
 	"fmt"
-	"io"
 	"html/template"
+	"io"
+	// "os"
 )
 
-func ExecuteTemplate(tmpls *template.Template, tmplName string, w io.Writer, data interface{}) error {
+func Render(tmpls *template.Template, tmplName string, w io.Writer, data interface{}) error {
 	var err error
-	layout := tmpls.Lookup("layout")
+	layout := tmpls.Lookup("layout.html")
 	if layout == nil {
 		return errors.New("no layout template")
 	}
@@ -24,10 +25,11 @@ func ExecuteTemplate(tmpls *template.Template, tmplName string, w io.Writer, dat
 		return fmt.Errorf("template not found: %s", tmplName)
 	}
 
-	_, err = layout.AddParseTree("", t.Tree)
+	tmpl, err := layout.AddParseTree("", t.Tree)
 	if err != nil {
 		return err
 	}
 
-	return layout.Execute(w, data)
+	return tmpl.ExecuteTemplate(w, "layout.html", data)
+	// return tmpl.ExecuteTemplate(os.Stdout, "layout.html", data)
 }
