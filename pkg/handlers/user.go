@@ -1,10 +1,12 @@
 package handlers
 
 import (
+	"fmt"
 	"html/template"
 	"net/http"
 
 	"moshack_2022/pkg/session"
+	"moshack_2022/pkg/t_executor"
 	"moshack_2022/pkg/user"
 
 	"go.uber.org/zap"
@@ -25,9 +27,10 @@ func (h *UserHandler) Index(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.Tmpl.ExecuteTemplate(w, "login.html", nil)
+	err = t_executor.ExecuteTemplate(h.Tmpl, "mainpage.html", w, nil)
 	if err != nil {
-		http.Error(w, `Template errror`, http.StatusInternalServerError)
+		errString := fmt.Sprintf("Template error: %s", err)
+		http.Error(w, errString, http.StatusInternalServerError)
 		return
 	}
 }

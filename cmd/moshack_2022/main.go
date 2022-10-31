@@ -22,7 +22,7 @@ import (
 
 func main() {
 
-	templates := template.Must(template.ParseGlob("./templates/*"))
+	templates := template.Must(template.ParseGlob("./templates/*.html"))
 
 	dsn := "host=localhost user=postgres password=3546"
 	dsn += " dbname=gusev port=5432 sslmode=disable"
@@ -88,6 +88,9 @@ func main() {
 	r.HandleFunc("/registration", userHandler.Register).Methods("POST")
 
 	r.HandleFunc("/loadxls", apartmentHandler.Load).Methods("GET")
+	r.HandleFunc("/loadxls", apartmentHandler.ParseFile).Methods("POST")
+
+	r.HandleFunc("/estimation", apartmentHandler.Table).Methods("GET")
 
 	r.HandleFunc("/items", handlers.List).Methods("GET")
 	r.HandleFunc("/items/new", handlers.AddForm).Methods("GET")
