@@ -6,13 +6,14 @@ import (
 	"github.com/shakinm/xlsReader/xls"
 	"gorm.io/gorm"
 	"log"
+	"moshack_2022/pkg/apartments"
 	"strconv"
 )
 
 // TODO: по-хорошему, надо быпереписать так, чтобы можно было легко расширять набор свойств из подпакетов
 //Ожидаемый вид таблицы: ...| (номер столбца) Информация |
 //(0) Адрес |(1) Кол-во комнат |(2) Тип здания |(3) Кол-во этажей |(4) Материал стен |(5) Этаж квартиры |(6) Площадь квартиры |
-//|(7) Площадь кухни |(8) Тип балкона |(9) Удаленность от метро |  |  |  |  |  |
+//|(7) Площадь кухни |(8) Тип балкона |(9) Удаленность от метро | (10) Состояние |  |  |  |  |
 
 type ApartmentJSON struct {
 	Address         string  `json:"Address"`
@@ -25,29 +26,17 @@ type ApartmentJSON struct {
 	KitchenArea     float64 `json:"KitchenArea"`
 	Balcony         string  `json:"Balcony"`
 	MetroRemoteness int     `json:"MetroRemoteness"`
-}
-
-type apartment struct {
-	Address         string
-	Rooms           int
-	BuildingSegment int
-	BuildingFloors  int
-	WallMaterial    int
-	ApartmentFloor  int
-	ApartmentArea   float64
-	KitchenArea     float64
-	Balcony         int
-	MetroRemoteness int
+	Condition       string  `json:"Condition"`
 }
 
 type ExcelParser struct {
 	FileName   string
 	excelSheet *xls.Sheet
-	apartments []apartment
+	Apartments []apartments.Apartment
 }
 
 var excelColumnNames = []string{"Адрес", "Кол-во комнат", "Тип здания", "Кол-во этажей", "Материал стен",
-	"Этаж квартиры", "Площадь квартиры", "Площадь кухни", "Тип балкона", "Удаленность от метро"}
+	"Этаж квартиры", "Площадь квартиры", "Площадь кухни", "Тип балкона", "Удаленность от метро", "Состояние"}
 
 func OpenExcel(name string) *xls.Sheet {
 	excelFile, err := xls.OpenFile(name)
@@ -63,8 +52,8 @@ func OpenExcel(name string) *xls.Sheet {
 	return excelSheet
 }
 
-func insertApartmentToPSQL(json *apartment, db *gorm.DB) {
-	db.Table("apartments").Create(*json)
+func insertApartmentToPSQL(apartment *apartments.Apartment, db *gorm.DB) {
+	db.Table("apartments").Create(*apartment)
 }
 
 func (excel *ExcelParser) Parse(db *gorm.DB) *ExcelParser {
@@ -94,7 +83,7 @@ func (excel *ExcelParser) Parse(db *gorm.DB) *ExcelParser {
 			log.Panic("В екселе больше столбцов чем надо")
 		}
 
-		newApartment := apartment{
+		newApartment := apartments.Apartment{
 			Address:         cells[0].GetString(),
 			Rooms:           rooms,
 			BuildingSegment: typeBuildingSegment.GetState(cells[2].GetString()),
@@ -105,21 +94,22 @@ func (excel *ExcelParser) Parse(db *gorm.DB) *ExcelParser {
 			KitchenArea:     kSquare,
 			Balcony:         typeBalcony.GetState(cells[8].GetString()),
 			MetroRemoteness: metroRemotneness,
+			Condition:       typeCondition.GetState(cells[10].GetString()),
 		}
 		insertApartmentToPSQL(&newApartment, db)
 
-		(*excel).apartments = append((*excel).apartments, newApartment)
+		(*excel).Apartments = append((*excel).Apartments, newApartment)
 	}
 
 	return excel
 }
 
-func (excel *ExcelParser) MarshalExcel() []byte {
+func MarshalExcel(apartments []apartments.Apartment) []byte {
 	type respBody struct {
 		Apartments []ApartmentJSON `json:"apartments"`
 	}
 	var jsonApartments []ApartmentJSON
-	for _, el := range excel.apartments {
+	for _, el := range apartments {
 		jsonApartments = append(jsonApartments, ApartmentJSON{
 			Address:         el.Address,
 			Rooms:           el.Rooms,
@@ -131,6 +121,7 @@ func (excel *ExcelParser) MarshalExcel() []byte {
 			KitchenArea:     el.KitchenArea,
 			Balcony:         typeBalcony.GetJSON(el.Balcony),
 			MetroRemoteness: el.MetroRemoteness,
+			Condition:       typeCondition.GetJSON(el.Condition),
 		})
 	}
 	data, _ := json.Marshal(respBody{Apartments: jsonApartments})
