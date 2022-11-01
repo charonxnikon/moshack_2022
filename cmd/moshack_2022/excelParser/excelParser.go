@@ -9,6 +9,8 @@ import (
 	"strconv"
 )
 
+const ()
+
 type apartment struct {
 	Address string `json:"Address"`
 	Rooms   int    `json:"Rooms"`
