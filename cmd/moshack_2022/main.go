@@ -2,6 +2,7 @@ package main
 
 import (
 	"html/template"
+	"moshack_2022/cmd/moshack_2022/excelParser"
 	"moshack_2022/pkg/apartments"
 	"moshack_2022/pkg/handlers"
 	"moshack_2022/pkg/items"
@@ -9,6 +10,7 @@ import (
 	"moshack_2022/pkg/session"
 	"moshack_2022/pkg/user"
 	"net/http"
+	"os"
 
 	// "os"
 
@@ -40,12 +42,12 @@ func main() {
 		panic(err) // TODO
 	}
 
-	// if len(os.Args) > 1 {
-	// 	excel := ExcelParser{fileName: "test.xls"}
-	// 	jsonData := excel.parse(db).marshalExcel()
-	// 	println(string(jsonData))
-	// 	return
-	// }
+	if len(os.Args) > 1 {
+		excel := excelParser.ExcelParser{FileName: "test.xls"}
+		jsonData := excel.Parse(db).MarshalExcel()
+		println(string(jsonData))
+		return
+	}
 
 	sm := session.NewSessionsManager()
 	zapLogger, _ := zap.NewProduction()
