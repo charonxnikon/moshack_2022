@@ -20,6 +20,7 @@ CREATE TABLE apartments(
     kitchen_area real,
     balcony integer,
     metro_remoteness integer,
+    condition integer,
     latitude real,
     longitude real
 );
