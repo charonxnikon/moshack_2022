@@ -18,10 +18,10 @@ module.exports = {
         new ExtractTextPlugin({ filename: 'css/[name].css', disable: false, allChunks: true })
     ],
 
-    context: __dirname + '/src/js/modules/',
+    context: __dirname + '/src/js/nodes/',
 
     entry : {
-        table: ['./table.js'],
+        mainpage: ['./mainpage.js'],
     },
 
     output: {

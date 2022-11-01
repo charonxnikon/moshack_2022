@@ -18,59 +18,15 @@
             'line-view' : LineView,
         },
 
+        props : {
+            data: {
+                type: Array,
+            },
+        },
+
         data() {
             return {
                 activeLine: -1,
-                data: [{
-                    address: "улица Пупкина д. 1",
-                    rooms: "3",
-                    type: "Новостройка",
-                    height: "10",
-                    material: "кирпич",
-                    floor: "7",
-                    area: "100",
-                    kitchen: "20",
-                    balcony: "есть",
-                    metro: "Авиамоторная",
-                    condition: "под чистовую отделку",
-                },
-                {
-                    address: "улица Пупкина д. 1",
-                    rooms: "3",
-                    type: "Новостройка",
-                    height: "10",
-                    material: "кирпич",
-                    floor: "7",
-                    area: "100",
-                    kitchen: "20",
-                    balcony: "есть",
-                    metro: "Авиамоторная",
-                    condition: "под чистовую отделку",
-                },{
-                    address: "улица Пупкина д. 1",
-                    rooms: "3",
-                    type: "Новостройка",
-                    height: "10",
-                    material: "кирпич",
-                    floor: "7",
-                    area: "100",
-                    kitchen: "20",
-                    balcony: "есть",
-                    metro: "Авиамоторная",
-                    condition: "под чистовую отделку",
-                },{
-                    address: "улица Пупкина д. 1",
-                    rooms: "3",
-                    type: "Новостройка",
-                    height: "10",
-                    material: "кирпич",
-                    floor: "7",
-                    area: "100",
-                    kitchen: "20",
-                    balcony: "есть",
-                    metro: "Авиамоторная",
-                    condition: "под чистовую отделку",
-                },],
             }
         },
 

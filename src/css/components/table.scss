@@ -67,15 +67,3 @@
         font-weight: bold;
     }
 }
-
-.column {
-    &-1in15 {
-        width: 6.666%;
-        flex-basis: 6.666%;
-    }
-
-    &-2in15 {
-        width: 13.333%;
-        flex-basis: 13.333%;
-    }
-}
