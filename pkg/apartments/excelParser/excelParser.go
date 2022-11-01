@@ -1,13 +1,16 @@
 package excelParser
 
 import (
+	"errors"
 	"fmt"
-	"github.com/shakinm/xlsReader/xls"
-	"gorm.io/gorm"
 	"log"
+	"mime/multipart"
 	"moshack_2022/pkg/apartments"
 	apartmentTypes "moshack_2022/pkg/apartments/type"
 	"strconv"
+
+	"github.com/shakinm/xlsReader/xls"
+	"gorm.io/gorm"
 )
 
 // TODO: по-хорошему, надо быпереписать так, чтобы можно было легко расширять набор свойств из подпакетов
@@ -21,8 +24,99 @@ type ExcelParser struct {
 	Apartments []apartments.Apartment
 }
 
-var excelColumnNames = []string{"Адрес", "Кол-во комнат", "Тип здания", "Кол-во этажей", "Материал стен",
-	"Этаж квартиры", "Площадь квартиры", "Площадь кухни", "Тип балкона", "Удаленность от метро", "Состояние"}
+var excelColumnNames = []string{
+	"Адрес",
+	"Кол-во комнат",
+	"Тип здания",
+	"Кол-во этажей",
+	"Материал стен",
+	"Этаж квартиры",
+	"Площадь квартиры",
+	"Площадь кухни",
+	"Тип балкона",
+	"Удаленность от метро",
+	"Состояние",
+}
+
+func invalidValueError(row int, cell int, err error) error {
+	return fmt.Errorf("invalid value if row %d, cell %s, error: %s",
+		row, excelColumnNames[cell], err)
+}
+
+func ParseXLS(file multipart.File) ([]*apartments.Apartment, error) {
+	xlsFile, err := xls.OpenReader(file)
+	if err != nil {
+		return nil, err
+	}
+	xlsSheet, err := xlsFile.GetSheet(0)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]*apartments.Apartment, 0)
+	for rowNum := 1; rowNum < xlsSheet.GetNumberRows(); rowNum++ {
+		row, err := xlsSheet.GetRow(rowNum)
+		if err != nil {
+			return nil, err
+		}
+
+		cells := row.GetCols()
+		if len(cells) != len(excelColumnNames) {
+			errStr := fmt.Sprintf("invalid number of conumns in xls file: expected %d, got %d",
+				len(excelColumnNames),
+				len(cells))
+			return nil, errors.New(errStr)
+		}
+
+		rooms, err := strconv.Atoi(cells[1].GetString())
+		if err != nil {
+			return nil, invalidValueError(rowNum, 1, err)
+		}
+
+		floors, err := strconv.Atoi(cells[3].GetString())
+		if err != nil {
+			return nil, invalidValueError(rowNum, 3, err)
+		}
+
+		floor, err := strconv.Atoi(cells[5].GetString())
+		if err != nil {
+			return nil, invalidValueError(rowNum, 5, err)
+		}
+
+		aSquare, err := strconv.ParseFloat(cells[6].GetString(), 64)
+		if err != nil {
+			return nil, invalidValueError(rowNum, 6, err)
+		}
+
+		kSquare, err := strconv.ParseFloat(cells[7].GetString(), 64)
+		if err != nil {
+			return nil, invalidValueError(rowNum, 7, err)
+		}
+
+		metroRemotneness, err := strconv.Atoi(cells[9].GetString())
+		if err != nil {
+			return nil, invalidValueError(rowNum, 9, err)
+		}
+
+		newApartment := &apartments.Apartment{
+			Address:         cells[0].GetString(),
+			Rooms:           rooms,
+			BuildingSegment: apartmentTypes.BuildingSegment.GetState(cells[2].GetString()),
+			BuildingFloors:  floors,
+			WallMaterial:    apartmentTypes.WallMaterial.GetState(cells[4].GetString()),
+			ApartmentFloor:  floor,
+			ApartmentArea:   aSquare,
+			KitchenArea:     kSquare,
+			Balcony:         apartmentTypes.Balcony.GetState(cells[8].GetString()),
+			MetroRemoteness: metroRemotneness,
+			Condition:       apartmentTypes.Condition.GetState(cells[10].GetString()),
+		}
+
+		result = append(result, newApartment)
+	}
+
+	return result, nil
+}
 
 func OpenExcel(name string) *xls.Sheet {
 	excelFile, err := xls.OpenFile(name)
@@ -49,8 +143,8 @@ func (excel ExcelParser) Parse(db *gorm.DB) *ExcelParser {
 	//TODO:добавить проверку соответсвия первой строки excelColumnNames
 	//TODO:Panic() в работе сервера так себе, пожалуй
 
-	for i := 1; i < excel.excelSheet.GetNumberRows(); i++ {
-		row, err := excel.excelSheet.GetRow(i)
+	for rowNum := 1; rowNum < excel.excelSheet.GetNumberRows(); rowNum++ {
+		row, err := excel.excelSheet.GetRow(rowNum)
 		if err != nil {
 			log.Panic(err)
 		}

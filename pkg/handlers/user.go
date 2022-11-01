@@ -27,6 +27,8 @@ func (h *UserHandler) Index(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//	h.Tmpl.ExecuteTemplate(w, "login.html", nil) // tmp
+
 	err = renderer.Render(h.Tmpl, "mainpage.html", w, nil)
 	if err != nil {
 		errString := fmt.Sprintf("Template error: %s", err)

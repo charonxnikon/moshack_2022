@@ -25,6 +25,7 @@ import (
 func main() {
 
 	templates := template.Must(template.ParseGlob("./templates/*.html"))
+	//	templates := template.Must(template.ParseGlob("../../templates/*.html")) // for testing
 
 	dsn := "host=localhost user=postgres password=3546"
 	dsn += " dbname=gusev port=5432 sslmode=disable"

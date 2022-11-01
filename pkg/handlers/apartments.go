@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html/template"
 	"moshack_2022/pkg/apartments"
+	"moshack_2022/pkg/apartments/excelParser"
 	"net/http"
 
 	"go.uber.org/zap"
@@ -18,27 +19,43 @@ type ApartmentHandler struct {
 func (h *ApartmentHandler) Load(w http.ResponseWriter, r *http.Request) {
 	err := h.Tmpl.ExecuteTemplate(w, "loadxls.html", nil)
 	if err != nil {
-		http.Error(w, `Template errror`, http.StatusInternalServerError)
+		http.Error(w, "Template errror", http.StatusInternalServerError)
 		return
 	}
 }
 
 func (h *ApartmentHandler) ParseFile(w http.ResponseWriter, r *http.Request) {
-	r.ParseMultipartForm(5 * 1024 * 1025)
+	err := r.ParseMultipartForm(128 * 1024 * 1024)
+	if err != nil {
+		http.Error(w, "File errror: file is too much", http.StatusInternalServerError)
+		return
+	}
 	file, header, err := r.FormFile("xls_file")
 	if err != nil {
-		http.Error(w, `File errror`, http.StatusInternalServerError)
+		http.Error(w, "File errror", http.StatusInternalServerError)
 		return
 	}
 	defer file.Close()
 
-	fmt.Fprintf(w, "header.Filename %v\n", header.Filename)
-	fmt.Fprintf(w, "header.Header %#v\n", header.Header)
+	fmt.Fprintf(w, "header.Filename %v\n", header.Filename) //
+	fmt.Fprintf(w, "header.Header %#v\n", header.Header)    //
 
-	//TODO:
-	//тут надо сохранить файл на диск и вызвать
-	//excelParser.ExcelParser{FileName: <filename.xls>}.Parse(db)
-	// вызов парсера
+	fmt.Println("qq")
+	aparts, err := excelParser.ParseXLS(file)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	for _, apart := range aparts {
+		_, err := h.ApartmentRepo.Add(apart)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	// что записать в w в ответ?
 }
 
 func (h *ApartmentHandler) Table(w http.ResponseWriter, r *http.Request) {

@@ -31,5 +31,5 @@ func Render(tmpls *template.Template, tmplName string, w io.Writer, data interfa
 	}
 
 	return tmpl.ExecuteTemplate(w, "layout.html", data)
-	// return tmpl.ExecuteTemplate(os.Stdout, "layout.html", data)
+	//return tmpl.ExecuteTemplate(os.Stdout, "layout.html", data) // for testing
 }

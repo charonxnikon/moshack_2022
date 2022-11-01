@@ -2,3 +2,4 @@
 /bin
 /templates_old
 node_modules/
+.vscode
