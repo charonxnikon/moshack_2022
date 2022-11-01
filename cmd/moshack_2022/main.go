@@ -2,8 +2,8 @@ package main
 
 import (
 	"html/template"
-	"moshack_2022/cmd/moshack_2022/excelParser"
 	"moshack_2022/pkg/apartments"
+	"moshack_2022/pkg/apartments/excelParser"
 	"moshack_2022/pkg/handlers"
 	"moshack_2022/pkg/items"
 	"moshack_2022/pkg/middleware"
@@ -44,7 +44,7 @@ func main() {
 
 	if len(os.Args) > 1 {
 		excel := excelParser.ExcelParser{FileName: "test.xls"}
-		jsonData := excel.Parse(db).MarshalExcel()
+		jsonData := apartments.MarshalApartments(excel.Parse(db).Apartments)
 		println(string(jsonData))
 		return
 	}

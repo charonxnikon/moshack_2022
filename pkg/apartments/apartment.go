@@ -1,18 +1,20 @@
 package apartments
 
 type Apartment struct {
-	ID                 uint32
-	Location           string
-	Coords             [2]float64
-	RoomsNumber        int
-	Segment            string
-	WallMaterial       string
-	Floor              int
-	Square             int
-	KitchenSquare      int
-	HasBalcony         bool
-	DistanceFromSubway int
-	Condition          string
+	ID              uint32
+	Address         string
+	Rooms           int
+	BuildingSegment int
+	BuildingFloors  int
+	WallMaterial    int
+	ApartmentFloor  int
+	ApartmentArea   float64
+	KitchenArea     float64
+	Balcony         int
+	MetroRemoteness int
+	Condition       int
+	Latitude        float64
+	Longitude       float64
 }
 
 type ApartmentRepo interface {

@@ -35,9 +35,15 @@ func (h *ApartmentHandler) ParseFile(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "header.Filename %v\n", header.Filename)
 	fmt.Fprintf(w, "header.Header %#v\n", header.Header)
 
+	//TODO:
+	//тут надо сохранить файл на диск и вызвать
+	//excelParser.ExcelParser{FileName: <filename.xls>}.Parse(db)
 	// вызов парсера
 }
 
 func (h *ApartmentHandler) Table(w http.ResponseWriter, r *http.Request) {
+	//TODO:
+	//написать запрос, возвращающтй слайс апартаментов и вызвать к нему
+	//apartments.MarshalApartments()
 	// здесь в w пишем json'ы
 }

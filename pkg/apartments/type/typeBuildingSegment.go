@@ -1,6 +1,6 @@
-package excelParser
+package apartmentTypes
 
-var typeBuildingSegment = enumType{
+var BuildingSegment = enumType{
 	numberOfStates: 3,
 	possibleInput: [][]string{
 		{"Новое"},

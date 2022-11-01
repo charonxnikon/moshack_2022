@@ -1,4 +1,4 @@
-package excelParser
+package apartmentTypes
 
 import "strings"
 

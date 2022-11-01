@@ -1,6 +1,6 @@
-package excelParser
+package apartmentTypes
 
-var typeWallMaterial = enumType{
+var WallMaterial = enumType{
 	numberOfStates: 3,
 	possibleInput: [][]string{
 		{"Кирпич"},

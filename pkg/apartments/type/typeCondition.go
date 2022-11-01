@@ -1,6 +1,6 @@
-package excelParser
+package apartmentTypes
 
-var typeCondition = enumType{
+var Condition = enumType{
 	numberOfStates: 3,
 	possibleInput: [][]string{
 		{"Без отделки"},

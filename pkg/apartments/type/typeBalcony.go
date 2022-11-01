@@ -1,6 +1,6 @@
-package excelParser
+package apartmentTypes
 
-var typeBalcony enumType = enumType{
+var Balcony enumType = enumType{
 	numberOfStates: 2,
 	possibleInput: [][]string{
 		{"Нет"},
