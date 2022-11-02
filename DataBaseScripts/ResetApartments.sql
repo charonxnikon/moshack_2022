@@ -1,18 +1,19 @@
 \c gusev
-DROP TABLE apartments;
+DROP TABLE IF EXISTS apartments;
 CREATE TABLE apartments(
     id serial PRIMARY KEY,
-    address varchar(100),
+    user_id serial, 
+    address text,
     rooms smallint,
-    building_segment smallint,
-    building_floors smallint,
-    wall_material smallint,
-    apartment_floor smallint,
-    apartment_area real,
-    kitchen_area real,
-    balcony integer,
-    metro_remoteness integer,
-    condition integer,
+    type text,
+    height smallint,
+    material text,
+    floor smallint,
+    area real,
+    kitchen real,
+    balcony text,
+    metro integer,
+    condition text,
     latitude real,
     longitude real
 );
