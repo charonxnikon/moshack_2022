@@ -3,15 +3,12 @@ package main
 import (
 	"html/template"
 	"moshack_2022/pkg/apartments"
-	"moshack_2022/pkg/apartments/excelParser"
 	"moshack_2022/pkg/handlers"
 	"moshack_2022/pkg/items"
 	"moshack_2022/pkg/middleware"
 	"moshack_2022/pkg/session"
 	"moshack_2022/pkg/user"
 	"net/http"
-	"os"
-
 	// "os"
 
 	"github.com/gorilla/mux"
@@ -41,13 +38,6 @@ func main() {
 	err = sqlDB.Ping()
 	if err != nil {
 		panic(err) // TODO
-	}
-
-	if len(os.Args) > 1 {
-		excel := excelParser.ExcelParser{FileName: "test.xls"}
-		jsonData := apartments.MarshalApartments(excel.Parse(db).Apartments)
-		println(string(jsonData))
-		return
 	}
 
 	sm := session.NewSessionsManager()
