@@ -41,12 +41,22 @@ func (h *ApartmentHandler) ParseFile(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "header.Header %#v\n", header.Header)    //
 
 	fmt.Println("qq")
-	aparts, err := excelParser.ParseXLS(file)
+
+	//TODO:я не знаю, как получить юзерАйДи
+	var userID uint32 = 10
+	aparts, err := excelParser.ParseXLS(file, userID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
+	//TODO:я же правильно вставляю в бд?
+	for _, apart := range aparts {
+		_, err := h.ApartmentRepo.Add(apart)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
 	for _, apart := range aparts {
 		_, err := h.ApartmentRepo.Add(apart)
 		if err != nil {
@@ -56,6 +66,8 @@ func (h *ApartmentHandler) ParseFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// что записать в w в ответ?
+	//TODO:вроде так)
+	w.Write(apartments.MarshalApartments(aparts))
 }
 
 func (h *ApartmentHandler) Table(w http.ResponseWriter, r *http.Request) {

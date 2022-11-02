@@ -6,11 +6,9 @@ import (
 	"log"
 	"mime/multipart"
 	"moshack_2022/pkg/apartments"
-	apartmentTypes "moshack_2022/pkg/apartments/type"
 	"strconv"
 
 	"github.com/shakinm/xlsReader/xls"
-	"gorm.io/gorm"
 )
 
 // TODO: по-хорошему, надо быпереписать так, чтобы можно было легко расширять набор свойств из подпакетов
@@ -43,7 +41,7 @@ func invalidValueError(row int, cell int, err error) error {
 		row, excelColumnNames[cell], err)
 }
 
-func ParseXLS(file multipart.File) ([]*apartments.Apartment, error) {
+func ParseXLS(file multipart.File, userID uint32) ([]*apartments.Apartment, error) {
 	xlsFile, err := xls.OpenReader(file)
 	if err != nil {
 		return nil, err
@@ -99,17 +97,22 @@ func ParseXLS(file multipart.File) ([]*apartments.Apartment, error) {
 		}
 
 		newApartment := &apartments.Apartment{
-			Address:         cells[0].GetString(),
-			Rooms:           rooms,
-			BuildingSegment: apartmentTypes.BuildingSegment.GetState(cells[2].GetString()),
-			BuildingFloors:  floors,
-			WallMaterial:    apartmentTypes.WallMaterial.GetState(cells[4].GetString()),
-			ApartmentFloor:  floor,
-			ApartmentArea:   aSquare,
-			KitchenArea:     kSquare,
-			Balcony:         apartmentTypes.Balcony.GetState(cells[8].GetString()),
+			UserID:  userID,
+			Address: cells[0].GetString(),
+			Rooms:   int16(rooms),
+			//BuildingSegment: apartmentTypes.BuildingSegment.GetState(cells[2].GetString()),
+			BuildingSegment: cells[2].GetString(),
+			BuildingFloors:  int16(floors),
+			//WallMaterial:    apartmentTypes.WallMaterial.GetState(cells[4].GetString()),
+			WallMaterial:   cells[4].GetString(),
+			ApartmentFloor: int16(floor),
+			ApartmentArea:  aSquare,
+			KitchenArea:    kSquare,
+			//Balcony:         apartmentTypes.Balcony.GetState(cells[8].GetString()),
+			Balcony:         cells[8].GetString(),
 			MetroRemoteness: metroRemotneness,
-			Condition:       apartmentTypes.Condition.GetState(cells[10].GetString()),
+			//Condition:       apartmentTypes.Condition.GetState(cells[10].GetString()),
+			Condition: cells[10].GetString(),
 		}
 
 		result = append(result, newApartment)
@@ -131,6 +134,8 @@ func OpenExcel(name string) *xls.Sheet {
 	}
 	return excelSheet
 }
+
+/*
 
 func insertApartmentToPSQL(apartment *apartments.Apartment, db *gorm.DB) {
 	db.Table("apartments").Create(*apartment)
@@ -184,3 +189,4 @@ func (excel ExcelParser) Parse(db *gorm.DB) *ExcelParser {
 
 	return &excel
 }
+*/

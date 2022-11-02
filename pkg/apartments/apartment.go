@@ -2,17 +2,18 @@ package apartments
 
 type Apartment struct {
 	ID              uint32
+	UserID          uint32
 	Address         string
-	Rooms           int
-	BuildingSegment int
-	BuildingFloors  int
-	WallMaterial    int
-	ApartmentFloor  int
+	Rooms           int16
+	BuildingSegment string
+	BuildingFloors  int16
+	WallMaterial    string
+	ApartmentFloor  int16
 	ApartmentArea   float64
 	KitchenArea     float64
-	Balcony         int
+	Balcony         string
 	MetroRemoteness int
-	Condition       int
+	Condition       string
 	Latitude        float64
 	Longitude       float64
 }
