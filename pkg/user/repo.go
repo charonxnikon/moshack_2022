@@ -7,8 +7,8 @@ import (
 )
 
 var (
-	ErrNoUser  = errors.New("No user found")
-	ErrBadPass = errors.New("Invald password")
+	ErrNoUser  = errors.New("no user found")
+	ErrBadPass = errors.New("invalid password")
 )
 
 type UserMemoryRepository struct {

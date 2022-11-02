@@ -1,10 +1,11 @@
 package handlers
 
 import (
-	"fmt"
+	"encoding/json"
 	"html/template"
 	"moshack_2022/pkg/apartments"
 	"moshack_2022/pkg/apartments/excelParser"
+	"moshack_2022/pkg/session"
 	"net/http"
 
 	"go.uber.org/zap"
@@ -14,6 +15,7 @@ type ApartmentHandler struct {
 	Tmpl          *template.Template
 	ApartmentRepo apartments.ApartmentRepo
 	Logger        *zap.SugaredLogger
+	Sessions      *session.SessionsManager
 }
 
 func (h *ApartmentHandler) Load(w http.ResponseWriter, r *http.Request) {
@@ -37,26 +39,19 @@ func (h *ApartmentHandler) ParseFile(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	fmt.Fprintf(w, "header.Filename %v\n", header.Filename) //
-	fmt.Fprintf(w, "header.Header %#v\n", header.Header)    //
+	h.Logger.Infof("header.Filename %v\n", header.Filename)
+	h.Logger.Infof("header.Header %#v\n", header.Header)
 
-	fmt.Println("qq")
-
-	//TODO:я не знаю, как получить юзерАйДи
-	var userID uint32 = 10
-	aparts, err := excelParser.ParseXLS(file, userID)
+	userSession, err := h.Sessions.Check(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	aparts, err := excelParser.ParseXLS(file, userSession.UserID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	//TODO:я же правильно вставляю в бд?
-	for _, apart := range aparts {
-		_, err := h.ApartmentRepo.Add(apart)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}
 	for _, apart := range aparts {
 		_, err := h.ApartmentRepo.Add(apart)
 		if err != nil {
@@ -65,14 +60,54 @@ func (h *ApartmentHandler) ParseFile(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// что записать в w в ответ?
-	//TODO:вроде так)
-	w.Write(apartments.MarshalApartments(aparts))
+	//w.Write(apartments.MarshalApartments(aparts))
+	data, err := json.Marshal(&aparts)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Write(data)
 }
 
 func (h *ApartmentHandler) Table(w http.ResponseWriter, r *http.Request) {
-	//TODO:
-	//написать запрос, возвращающтй слайс апартаментов и вызвать к нему
-	//apartments.MarshalApartments()
-	// здесь в w пишем json'ы
+	userSession, err := h.Sessions.Check(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	aparts, err := h.ApartmentRepo.GetAllByUserID(userSession.UserID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	data, err := json.Marshal(&aparts)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	w.Write(data)
+}
+
+func (h *ApartmentHandler) Estimate(w http.ResponseWriter, r *http.Request) {
+	//apartmentID, err := strconv.Atoi(r.FormValue("id"))
+	// 	if err != nil {
+	// 		http.Error(w, err.Error(), http.StatusUnauthorized)
+	// 		return
+	// 	}
+
+	// здесь пишем JSON-rpc к питухону с запросом на посчитать и подобрать аналоги
+	// по сути просто пересылаем id квартиры (квартир?)
+}
+
+func (h *ApartmentHandler) Reestimate(w http.ResponseWriter, r *http.Request) {
+	// аналогично Estimate, только ещё всякие корректировки надо переслать
+}
+
+func (h *ApartmentHandler) EstimateAll(w http.ResponseWriter, r *http.Request) {
+	// рассчитываем весь пулл
+	// мб сразу формируем ексель и предлагаем скачать бесплатно без смс и регистрации?
 }

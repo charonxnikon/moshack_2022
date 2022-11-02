@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	errNoApartment = errors.New("No apartment found")
+	errNoApartment = errors.New("no apartment found")
 )
 
 type ApartmentDB struct {
@@ -20,16 +20,27 @@ func NewApartmentRepo(db *gorm.DB) *ApartmentDB {
 	}
 }
 
-// func GetAll() ([]*Apartment, error)
-
 func (adb *ApartmentDB) GetByID(id uint32) (*Apartment, error) {
-	apartments := make([]Apartment, 0)
-	adb.db.Where("id = ?", id).Find(&apartments)
-	if len(apartments) != 1 {
+	aparts := make([]Apartment, 0)
+	db := adb.db.Where("id = ?", id).Find(&aparts)
+	if db.Error != nil {
+		return nil, db.Error
+	}
+	if len(aparts) != 1 {
 		return nil, errNoApartment
 	}
 
-	return &apartments[0], nil
+	return &aparts[0], nil
+}
+
+func (adb *ApartmentDB) GetAllByUserID(userID uint32) ([]Apartment, error) {
+	aparts := make([]Apartment, 0)
+	db := adb.db.Where("user_id = ?", userID).Find(&aparts)
+	if db.Error != nil {
+		return nil, db.Error
+	}
+
+	return aparts, nil
 }
 
 func (adb *ApartmentDB) Add(apartment *Apartment) (uint32, error) {
@@ -40,8 +51,6 @@ func (adb *ApartmentDB) Add(apartment *Apartment) (uint32, error) {
 
 	return apartment.ID, nil
 }
-
-// Update(newApartment *Apartment) (bool, error)
 
 func (adb *ApartmentDB) Delete(id uint32) (bool, error) {
 	apartment := Apartment{}

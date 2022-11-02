@@ -9,6 +9,7 @@ import (
 	"moshack_2022/pkg/session"
 	"moshack_2022/pkg/user"
 	"net/http"
+
 	// "os"
 
 	"github.com/gorilla/mux"
@@ -24,8 +25,9 @@ func main() {
 	templates := template.Must(template.ParseGlob("./templates/*.html"))
 	//	templates := template.Must(template.ParseGlob("../../templates/*.html")) // for testing
 
+	// TODO - нормальная конфигурация
 	dsn := "host=localhost user=postgres password=3546"
-	dsn += " dbname=gusev port=5432 sslmode=disable"
+	dsn += " dbname=moshack port=5432 sslmode=disable"
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
@@ -60,6 +62,7 @@ func main() {
 		Tmpl:          templates,
 		Logger:        logger,
 		ApartmentRepo: apartmentRepo,
+		Sessions:      sm,
 	}
 
 	handlers := &handlers.ItemsHandler{
@@ -76,6 +79,7 @@ func main() {
 	r.HandleFunc("/", userHandler.Index).Methods("GET")
 	r.HandleFunc("/login", userHandler.LoginGET).Methods("GET")
 	r.HandleFunc("/login", userHandler.LoginPOST).Methods("POST")
+
 	r.HandleFunc("/logout", userHandler.Logout).Methods("POST")
 	r.HandleFunc("/registration", userHandler.Registration).Methods("GET")
 	r.HandleFunc("/registration", userHandler.Register).Methods("POST")
@@ -84,6 +88,9 @@ func main() {
 	r.HandleFunc("/loadxls", apartmentHandler.ParseFile).Methods("POST")
 
 	r.HandleFunc("/estimation", apartmentHandler.Table).Methods("GET")
+	r.HandleFunc("/estimation", apartmentHandler.Estimate).Methods("POST")
+	r.HandleFunc("/reestimation", apartmentHandler.Reestimate).Methods("POST")
+	r.HandleFunc("/finalestimation", apartmentHandler.EstimateAll).Methods("POST")
 
 	r.HandleFunc("/items", handlers.List).Methods("GET")
 	r.HandleFunc("/items/new", handlers.AddForm).Methods("GET")

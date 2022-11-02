@@ -1,5 +1,7 @@
-\c gusev
-DROP TABLE users;
+\c moshack
+
+DROP TABLE IF EXISTS users;
+
 CREATE TABLE users (
     id serial PRIMARY KEY,
     login varchar(25),

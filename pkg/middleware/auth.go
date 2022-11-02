@@ -8,12 +8,12 @@ import (
 
 var (
 	noAuthUrls = map[string]struct{}{
-		"/login":                     struct{}{},
-		"/registration":              struct{}{},
-		"/static/base/css/style.css": struct{}{},
+		"/login":                     {},
+		"/registration":              {},
+		"/static/base/css/style.css": {},
 	}
 	noSessUrls = map[string]struct{}{
-		"/": struct{}{},
+		"/": {},
 	}
 )
 
