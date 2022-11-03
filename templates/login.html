@@ -27,6 +27,10 @@
                 <input type="text" class="form__input" name="login" id="login" value="admin" placeholder="Имя пользователя" required>
                 <input type="password" class="form__input" name="password" id="password" value="1234" placeholder="Пароль" required>
                 <button type="submit" class="form__button">Войти</button>
+
+                {{if .error}}
+                    <div class="form__warning">Неверные имя пользователя или пароль!</div>
+                {{end}}
             </form>
         </div>
     </main>

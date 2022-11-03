@@ -1,7 +1,11 @@
 <template>
-    <div class="table__line" :class="isActive ? 'table__line-active' : ''" @click="handleClick">
+    <div class="table__line" :class="lineClass" @click="handleClick">
         <div class="table__line-fields">
-            <div v-for="(field, ind) in fields" :key="ind" class="table__field" :class="ind == 0 ? 'table__field-wide' : ''">
+            <div class="table__field table__field-wide" @click="expandLine">
+                <span class="table__field-label">Адрес</span>
+                <span class="table__field-info">{{ data.Address }}</span>
+            </div>
+            <div v-for="(field, ind) in fields" :key="ind" class="table__field table__field-hidden">
                 <span class="table__field-label">{{ field.fieldLabel }}</span>
                 <span class="table__field-info">{{ field.fieldData }}</span>
             </div>
@@ -32,41 +36,46 @@
         },
 
         computed: {
-            fields: function () {
-                return Object.keys(this.data).map((key) => {
+            lineClass: function() {
+                var currClass = this.isActive ? 'table__line-active ' : '';
+                currClass += this.hideFields ? 'table__line-collapsed ' : '';
+                return currClass;
+            },
+
+            fields: function() {
+                var keys = Object.keys(this.data).filter(key => !(['ID', 'Latitude', 'Longitude', 'Address'].includes(key)));
+
+                return keys.map((key) => {
                     var label = '';
                     switch (key) {
-                        case 'address':
-                            label = 'Адрес';
-                            break;
-                        case 'rooms':
+                        case 'Rooms':
                             label = 'Кол-во комнат';
                             break;
-                        case 'height':
+                        case 'Height':
                             label = 'Кол-во этажей';
                             break;
-                        case 'floor':
+                        case 'Floor':
                             label = 'Этаж';
                             break;
-                        case 'area':
+                        case 'Area':
                             label = 'Площадь';
                                 break;
-                        case 'kitchen':
+                        case 'Kitchen':
                             label = 'Площадь кухни';
                             break;
-                        case 'balcony':
+                        case 'Balcony':
                             label = 'Балкон';
                                 break;
-                        case 'type':
+                        case 'Type':
                             label = 'Тип';
                             break;
-                        case 'material':
+                        case 'Material':
                             label = 'Материал';
                             break;
-                        case 'metro':
+                        case 'Metro':
                             label = 'Станция';
                             break;
-                        case 'condition':
+                        case 'Condition':
                             label = 'Состояние';
                                 break;
                     }
@@ -79,9 +88,19 @@
             },
         },
 
+        data() {
+            return {
+                hideFields: true,
+            }
+        },
+
         methods: {
             handleClick: function() {
                 this.makeActive(this.id);
+            },
+
+            expandLine: function() {
+                this.hideFields = !this.hideFields;
             }
         }
     }

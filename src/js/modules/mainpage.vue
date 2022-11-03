@@ -19,12 +19,18 @@
             v-if="showTable && loaded !== null"
             :data="loaded">
         </table-view>
+
+        <!-- <map-view
+            v-if="showMap"
+            :data="mapData">
+        </map-view> -->
     </div>
 </template>
 
 <script>
 import UploadForm from '../components/upload-form/default.vue';
 import Table from '../components/table/default.vue';
+// import MapView from '../components/table/map.vue';
 
 import axios from 'axios'
 
@@ -32,6 +38,7 @@ export default {
     components: {
         'form-view' : UploadForm,
         'table-view' : Table,
+        // 'map-view' : MapView,
     },
 
     data() {
@@ -39,7 +46,9 @@ export default {
             hideForm: false,
             errorMessage: false,
             showTable: false,
+            showMap: false,
             loaded: null,
+            mapData: null,
         }
     },
 
@@ -80,6 +89,24 @@ export default {
 
                     if (this.loaded) {
                         this.showTable = true;
+                    }
+                }
+
+                console.log(response)
+            })
+            .catch(error => {
+                console.log(error.response)
+            });
+        },
+
+        calculate: function() {
+            axios.post('/estimation')
+            .then(response => {
+                if (response.status == 200) {
+                    this.mapData = response.data != "" ? response.data : null;
+
+                    if (this.mapData) {
+                        this.showMap = true;
                     }
                 }
 
