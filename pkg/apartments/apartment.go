@@ -35,8 +35,14 @@ type Apartment struct {
 }
 
 type ApartmentRepo interface {
-	GetByID(id uint32) (*Apartment, error)
-	GetAllByUserID(userID uint32) ([]Apartment, error)
-	Add(apartment *Apartment) (uint32, error)
-	Delete(id uint32) (bool, error)
+	GetUserApartmentByID(id uint32) (*Apartment, error)
+	GetDBApartmentByID(id uint32) (*Apartment, error)
+	GetAllUserApartmentsByUserID(userID uint32) ([]Apartment, error)
+	AddUserApartment(apartment *Apartment) (uint32, error)
+	DeleteUserApartment(id uint32) (bool, error)
 }
+
+const (
+	userApartmentsTable = "user_apartments"
+	dbApartmentsTable   = "db_apartments"
+)

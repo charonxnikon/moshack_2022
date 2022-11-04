@@ -3,7 +3,9 @@ CREATE DATABASE moshack;
 
 DROP TABLE IF EXISTS users;
 
-DROP TABLE IF EXISTS apartments;
+DROP TABLE IF EXISTS user_apartments;
+
+DROP TABLE IF EXISTS db_apartments;
 
 CREATE TABLE users (
     id serial PRIMARY KEY,
@@ -11,7 +13,25 @@ CREATE TABLE users (
     password varchar(25)
 );
 
-CREATE TABLE apartments(
+CREATE TABLE user_apartments(
+    id serial PRIMARY KEY,
+    user_id serial, 
+    address text,
+    rooms smallint,
+    type text,
+    height smallint,
+    material text,
+    floor smallint,
+    area real,
+    kitchen real,
+    balcony text,
+    metro integer,
+    condition text,
+    latitude real,
+    longitude real
+);
+
+CREATE TABLE db_apartments(
     id serial PRIMARY KEY,
     user_id serial, 
     address text,

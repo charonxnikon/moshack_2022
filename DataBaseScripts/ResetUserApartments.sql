@@ -1,8 +1,8 @@
 \c moshack
 
-DROP TABLE IF EXISTS apartments;
+DROP TABLE IF EXISTS user_apartments;
 
-CREATE TABLE apartments(
+CREATE TABLE user_apartments(
     id serial PRIMARY KEY,
     user_id serial, 
     address text,

@@ -4,11 +4,13 @@ import (
 	"html/template"
 	"moshack_2022/pkg/apartments"
 	"moshack_2022/pkg/handlers"
-	"moshack_2022/pkg/items"
+
+	// "moshack_2022/pkg/items"
 	"moshack_2022/pkg/middleware"
 	"moshack_2022/pkg/session"
 	"moshack_2022/pkg/user"
 	"net/http"
+	"net/rpc"
 
 	// "os"
 
@@ -48,9 +50,6 @@ func main() {
 	logger := zapLogger.Sugar()
 
 	userRepo := user.NewMemoryRepo(db)
-	itemsRepo := items.NewMemoryRepo()
-	apartmentRepo := apartments.NewApartmentRepo(db)
-
 	userHandler := &handlers.UserHandler{
 		Tmpl:     templates,
 		UserRepo: userRepo,
@@ -58,18 +57,26 @@ func main() {
 		Sessions: sm,
 	}
 
+	apartmentRepo := apartments.NewApartmentRepo(db)
+	//rpcClient, err := jsonrpc.Dial("localhost:", "8081")
+	var rpcClient *rpc.Client
+	if err != nil {
+		panic(err) // TODO
+	}
 	apartmentHandler := &handlers.ApartmentHandler{
 		Tmpl:          templates,
 		Logger:        logger,
 		ApartmentRepo: apartmentRepo,
 		Sessions:      sm,
+		JSONrpcClient: rpcClient,
 	}
 
-	handlers := &handlers.ItemsHandler{
-		Tmpl:      templates,
-		Logger:    logger,
-		ItemsRepo: itemsRepo,
-	}
+	// itemsRepo := items.NewMemoryRepo()
+	// handlers := &handlers.ItemsHandler{
+	// 	Tmpl:      templates,
+	// 	Logger:    logger,
+	// 	ItemsRepo: itemsRepo,
+	// }
 
 	r := mux.NewRouter()
 
@@ -92,12 +99,12 @@ func main() {
 	r.HandleFunc("/reestimation", apartmentHandler.Reestimate).Methods("POST")
 	r.HandleFunc("/finalestimation", apartmentHandler.EstimateAll).Methods("POST")
 
-	r.HandleFunc("/items", handlers.List).Methods("GET")
-	r.HandleFunc("/items/new", handlers.AddForm).Methods("GET")
-	r.HandleFunc("/items/new", handlers.Add).Methods("POST")
-	r.HandleFunc("/items/{id}", handlers.Edit).Methods("GET")
-	r.HandleFunc("/items/{id}", handlers.Update).Methods("POST")
-	r.HandleFunc("/items/{id}", handlers.Delete).Methods("DELETE")
+	// r.HandleFunc("/items", handlers.List).Methods("GET")
+	// r.HandleFunc("/items/new", handlers.AddForm).Methods("GET")
+	// r.HandleFunc("/items/new", handlers.Add).Methods("POST")
+	// r.HandleFunc("/items/{id}", handlers.Edit).Methods("GET")
+	// r.HandleFunc("/items/{id}", handlers.Update).Methods("POST")
+	// r.HandleFunc("/items/{id}", handlers.Delete).Methods("DELETE")
 
 	mux := middleware.Auth(sm, r)
 	mux = middleware.AccessLog(logger, mux)

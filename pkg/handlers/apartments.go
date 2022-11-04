@@ -7,6 +7,8 @@ import (
 	"moshack_2022/pkg/apartments/excelParser"
 	"moshack_2022/pkg/session"
 	"net/http"
+	"net/rpc"
+	"strconv"
 
 	"go.uber.org/zap"
 )
@@ -16,6 +18,7 @@ type ApartmentHandler struct {
 	ApartmentRepo apartments.ApartmentRepo
 	Logger        *zap.SugaredLogger
 	Sessions      *session.SessionsManager
+	JSONrpcClient *rpc.Client
 }
 
 func (h *ApartmentHandler) Load(w http.ResponseWriter, r *http.Request) {
@@ -53,7 +56,7 @@ func (h *ApartmentHandler) ParseFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	for _, apart := range aparts {
-		_, err := h.ApartmentRepo.Add(apart)
+		_, err := h.ApartmentRepo.AddUserApartment(apart)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -77,7 +80,7 @@ func (h *ApartmentHandler) Table(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	aparts, err := h.ApartmentRepo.GetAllByUserID(userSession.UserID)
+	aparts, err := h.ApartmentRepo.GetAllUserApartmentsByUserID(userSession.UserID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
@@ -93,14 +96,20 @@ func (h *ApartmentHandler) Table(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ApartmentHandler) Estimate(w http.ResponseWriter, r *http.Request) {
-	//apartmentID, err := strconv.Atoi(r.FormValue("id"))
-	// 	if err != nil {
-	// 		http.Error(w, err.Error(), http.StatusUnauthorized)
-	// 		return
-	// 	}
+	apartmentID, err := strconv.Atoi(r.FormValue("id"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
 
 	// здесь пишем JSON-rpc к питухону с запросом на посчитать и подобрать аналоги
 	// по сути просто пересылаем id квартиры (квартир?)
+
+	// надо определиться с типом возвращаемого значения
+	analogs := make([]uint32, 0)
+	h.JSONrpcClient.Call("estimate", apartmentID, &analogs)
+
+	// перебираем id'шники, достаём квартиры из базы, пишем их в ответ
 }
 
 func (h *ApartmentHandler) Reestimate(w http.ResponseWriter, r *http.Request) {

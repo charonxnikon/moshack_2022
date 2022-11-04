@@ -20,9 +20,10 @@ func NewApartmentRepo(db *gorm.DB) *ApartmentDB {
 	}
 }
 
-func (adb *ApartmentDB) GetByID(id uint32) (*Apartment, error) {
+func (adb *ApartmentDB) GetUserApartmentByID(id uint32) (*Apartment, error) {
 	aparts := make([]Apartment, 0)
-	db := adb.db.Where("id = ?", id).Find(&aparts)
+	// db := adb.db.Where("id = ?", id).Find(&aparts)
+	db := adb.db.Table(userApartmentsTable).Where("id = ?", id).Find(&aparts)
 	if db.Error != nil {
 		return nil, db.Error
 	}
@@ -33,9 +34,23 @@ func (adb *ApartmentDB) GetByID(id uint32) (*Apartment, error) {
 	return &aparts[0], nil
 }
 
-func (adb *ApartmentDB) GetAllByUserID(userID uint32) ([]Apartment, error) {
+func (adb *ApartmentDB) GetDBApartmentByID(id uint32) (*Apartment, error) {
 	aparts := make([]Apartment, 0)
-	db := adb.db.Where("user_id = ?", userID).Find(&aparts)
+	// db := adb.db.Where("id = ?", id).Find(&aparts)
+	db := adb.db.Table(dbApartmentsTable).Where("id = ?", id).Find(&aparts)
+	if db.Error != nil {
+		return nil, db.Error
+	}
+	if len(aparts) != 1 {
+		return nil, errNoApartment
+	}
+
+	return &aparts[0], nil
+}
+
+func (adb *ApartmentDB) GetAllUserApartmentsByUserID(userID uint32) ([]Apartment, error) {
+	aparts := make([]Apartment, 0)
+	db := adb.db.Table(userApartmentsTable).Where("user_id = ?", userID).Find(&aparts)
 	if db.Error != nil {
 		return nil, db.Error
 	}
@@ -43,8 +58,8 @@ func (adb *ApartmentDB) GetAllByUserID(userID uint32) ([]Apartment, error) {
 	return aparts, nil
 }
 
-func (adb *ApartmentDB) Add(apartment *Apartment) (uint32, error) {
-	result := adb.db.Create(apartment)
+func (adb *ApartmentDB) AddUserApartment(apartment *Apartment) (uint32, error) {
+	result := adb.db.Table(userApartmentsTable).Create(apartment)
 	if result.Error != nil {
 		return 0, result.Error
 	}
@@ -52,13 +67,12 @@ func (adb *ApartmentDB) Add(apartment *Apartment) (uint32, error) {
 	return apartment.ID, nil
 }
 
-func (adb *ApartmentDB) Delete(id uint32) (bool, error) {
+func (adb *ApartmentDB) DeleteUserApartment(id uint32) (bool, error) {
 	apartment := Apartment{}
-	result := adb.db.Where("id = ?", id).Delete(&apartment)
+	result := adb.db.Table(userApartmentsTable).Where("id = ?", id).Delete(&apartment)
 	if result.Error != nil {
 		return false, result.Error
 	}
 
 	return true, nil
-
 }
