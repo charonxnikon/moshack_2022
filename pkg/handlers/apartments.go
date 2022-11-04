@@ -106,10 +106,15 @@ func (h *ApartmentHandler) Estimate(w http.ResponseWriter, r *http.Request) {
 	// по сути просто пересылаем id квартиры (квартир?)
 
 	// надо определиться с типом возвращаемого значения
-	analogs := make([]uint32, 0)
-	h.JSONrpcClient.Call("estimate", apartmentID, &analogs)
+	type Analogs struct {
+		analogs    []uint32
+		price      float64
+		totalPrice float64
+	}
+	var analogs Analogs
+	h.JSONrpcClient.Call("get_analogs", apartmentID, &analogs)
 
-	// перебираем id'шники, достаём квартиры из базы, пишем их в ответ
+	// перебираем id'шники, достаём квартиры из базы, приводим к нужному типу, пишем их в ответ
 }
 
 func (h *ApartmentHandler) Reestimate(w http.ResponseWriter, r *http.Request) {
