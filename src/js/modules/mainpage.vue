@@ -17,20 +17,21 @@
 
         <table-view
             v-if="showTable && loaded !== null"
-            :data="loaded">
+            :data="loaded"
+            :calculate="calculate">
         </table-view>
 
-        <!-- <map-view
+        <map-view
             v-if="showMap"
             :data="mapData">
-        </map-view> -->
+        </map-view>
     </div>
 </template>
 
 <script>
 import UploadForm from '../components/upload-form/default.vue';
 import Table from '../components/table/default.vue';
-// import MapView from '../components/table/map.vue';
+import MapView from '../components/map/default.vue';
 
 import axios from 'axios'
 
@@ -38,7 +39,7 @@ export default {
     components: {
         'form-view' : UploadForm,
         'table-view' : Table,
-        // 'map-view' : MapView,
+        'map-view' : MapView,
     },
 
     data() {
@@ -99,22 +100,40 @@ export default {
             });
         },
 
-        calculate: function() {
-            axios.post('/estimation')
-            .then(response => {
-                if (response.status == 200) {
-                    this.mapData = response.data != "" ? response.data : null;
+        calculate: function(id) {
+            // axios.post('/estimation', {
+            //     'id': id,
+            // })
+            // .then(response => {
+            //     if (response.status == 200) {
+            //         this.mapData = response.data != "" ? response.data : null;
+            //
+            //         if (this.mapData) {
+            //             this.showMap = true;
+            //         }
+            //     }
+            //
+            //     console.log(response)
+            // })
+            // .catch(error => {
+            //     console.log(error.response)
+            // });
 
-                    if (this.mapData) {
-                        this.showMap = true;
-                    }
-                }
-
-                console.log(response)
-            })
-            .catch(error => {
-                console.log(error.response)
-            });
+            this.mapData = [
+                {
+                    id: '1',
+                    coords: [55.702999, 37.530883],
+                },
+                {
+                    id: '2',
+                    coords: [55.602999, 37.630883],
+                },
+                {
+                    id: '3',
+                    coords: [55.752999, 37.540883],
+                },
+            ];
+            this.showMap = true;
         },
     }
 }

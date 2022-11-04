@@ -12,7 +12,7 @@
         </div>
 
         <div v-if="isActive" class="table__line-navigation">
-            <button class="table__button" type="button">Рассчитать</button>
+            <button class="table__button" type="button" @click="calculateMethod">Рассчитать</button>
         </div>
     </div>
 </template>
@@ -31,6 +31,9 @@
                 type: Number,
             },
             makeActive: {
+                type: Function,
+            },
+            calculate: {
                 type: Function,
             },
         },
@@ -101,7 +104,11 @@
 
             expandLine: function() {
                 this.hideFields = !this.hideFields;
-            }
+            },
+
+            calculateMethod: function(id) {
+                this.calculate(this.data.ID);
+            },
         }
     }
 </script>
