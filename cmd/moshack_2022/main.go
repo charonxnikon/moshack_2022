@@ -9,14 +9,11 @@ import (
 
 	//	"os"
 
-	// "moshack_2022/pkg/items"
 	"moshack_2022/pkg/middleware"
 	"moshack_2022/pkg/session"
 	"moshack_2022/pkg/user"
 	"net/http"
 	"net/rpc"
-
-	// "os"
 
 	"github.com/gorilla/mux"
 
@@ -95,13 +92,6 @@ func main() {
 		JSONrpcClient: rpcClient,
 	}
 
-	// itemsRepo := items.NewMemoryRepo()
-	// handlers := &handlers.ItemsHandler{
-	// 	Tmpl:      templates,
-	// 	Logger:    logger,
-	// 	ItemsRepo: itemsRepo,
-	// }
-
 	r := mux.NewRouter()
 
 	fileServer := http.StripPrefix("/static/", http.FileServer(http.Dir("./static/")))
@@ -124,13 +114,6 @@ func main() {
 	r.HandleFunc("/finalestimation", apartmentHandler.EstimateAll).Methods("POST")
 
 	r.HandleFunc("/downloadxls", apartmentHandler.Download).Methods("GET")
-
-	// r.HandleFunc("/items", handlers.List).Methods("GET")
-	// r.HandleFunc("/items/new", handlers.AddForm).Methods("GET")
-	// r.HandleFunc("/items/new", handlers.Add).Methods("POST")
-	// r.HandleFunc("/items/{id}", handlers.Edit).Methods("GET")
-	// r.HandleFunc("/items/{id}", handlers.Update).Methods("POST")
-	// r.HandleFunc("/items/{id}", handlers.Delete).Methods("DELETE")
 
 	mux := middleware.Auth(sm, r)
 	mux = middleware.AccessLog(logger, mux)

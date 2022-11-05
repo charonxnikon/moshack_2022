@@ -1,5 +1,5 @@
 /vendor
 /bin
-/templates_old
+/old
 node_modules/
 .vscode
