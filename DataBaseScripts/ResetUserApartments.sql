@@ -6,7 +6,7 @@ CREATE TABLE user_apartments(
     id serial PRIMARY KEY,
     user_id serial, 
     address text,
-    rooms smallint,
+    rooms text,
     type text,
     height smallint,
     material text,
