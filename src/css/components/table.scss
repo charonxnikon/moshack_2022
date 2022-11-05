@@ -2,32 +2,34 @@
     width: 100%;
     margin-top: 20px;
     padding: 10px;
-    border: 3px solid #ff0076;
+    border: 2px solid #ff0076;
     border-radius: 8px;
+
+    &__content {
+        max-height: 600px;
+        overflow-y: scroll;
+        border-bottom: 2px solid #ff0076;
+        margin-bottom: 20px;
+    }
 
     &__line {
         display: flex;
         width: 100%;
         background-color: #1b002f;
         border-radius: 5px;
-        margin-bottom: 20px;
+        margin-bottom: 10px;
         padding: 10px 10px 0;
 
         &-fields {
             display: flex;
             flex-wrap: wrap;
-            flex-basis: 87%;
+            flex-grow: 1;
         }
 
         &-navigation {
             display: flex;
             justify-content: center;
             align-items: baseline;
-            flex-basis: 13%;
-        }
-
-        &:last-child {
-            margin: 0;
         }
     }
 
@@ -84,14 +86,61 @@
     }
 
     &__button {
-        margin-bottom: 10px;
-        padding: 10px 15px;
-        background-color: transparent;
+        position: relative;
+        padding: 0;
+        margin: 0;
+        background-color: #fff;
+        width: 39px;
+        height: 39px;
+        border-radius: 50%;
+        border: none;
         color: #ff0076;
+        cursor: pointer;
+        outline: none;
+
+        &::before, &::after {
+            content: '';
+            position: absolute;
+            top: calc(50% - 10px);
+            left: 18.5px;
+            width: 2px;
+            height: 20px;
+            background-color: #00a500;
+            transition: transform .3s, background-color .3s;
+        }
+
+        &::after {
+            transform: rotate(90deg);
+        }
+
+        &-remove {
+            &::before {
+                background-color: #730101;
+                transform: rotate(45deg);
+            }
+
+            &::after {
+                background-color: #730101;
+                transform: rotate(135deg);
+            }
+        }
+    }
+
+    &__footer {
+        width: 100%;
+        border-radius: 5px;
+    }
+
+    &__submit {
+        width: 100%;
+        padding: 10px;
+        background: #1b002f;
         border: 2px solid #ff0076;
         border-radius: 5px;
+        color: #ff0076;
         text-transform: uppercase;
-        font-weight: bold;
+        font-weight: 700;
+        text-align: center;
         cursor: pointer;
     }
 }
