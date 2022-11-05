@@ -8,7 +8,8 @@
     "npm": "^6.9.0",
     "resize-observer-polyfill": "^1.5.1",
     "vee-validate": "^2.0.0-rc.6",
-    "vue": "^2.1.0"
+    "vue": "^2.1.0",
+    "vue-yandex-maps": "^0.11.13"
   },
   "devDependencies": {
     "axios": "^0.15.3",

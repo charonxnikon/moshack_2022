@@ -45,6 +45,7 @@
             flex-basis: 100%;
             position: relative;
             padding-right: 40px;
+            cursor: pointer;
 
             &::after {
                 content: '';
@@ -91,5 +92,6 @@
         border-radius: 5px;
         text-transform: uppercase;
         font-weight: bold;
+        cursor: pointer;
     }
 }

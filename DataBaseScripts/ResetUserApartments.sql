@@ -17,5 +17,7 @@ CREATE TABLE user_apartments(
     metro integer,
     condition text,
     latitude real,
-    longitude real
+    longitude real,
+    total_price real,
+    price_m2 real
 );

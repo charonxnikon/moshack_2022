@@ -7,7 +7,7 @@ import (
 type ApartmentJSON struct {
 	Address   string  `json:"Address"`
 	UserID    uint32  `json:"UserID"`
-	Rooms     int16   `json:"Rooms"`
+	Rooms     string  `json:"Rooms"`
 	Type      string  `json:"Type"`
 	Height    int16   `json:"Height"`
 	Material  string  `json:"Material"`
@@ -21,7 +21,7 @@ type ApartmentJSON struct {
 	Longitude float64 `json:"Longitude"`
 }
 
-func MarshalApartments(apartments []*Apartment) []byte {
+func MarshalApartments(apartments []*UserApartment) []byte {
 	type respBody struct {
 		Apartments []ApartmentJSON `json:"apartments"`
 	}
@@ -49,5 +49,7 @@ func MarshalApartments(apartments []*Apartment) []byte {
 		})
 	}
 	data, _ := json.Marshal(respBody{Apartments: jsonApartments})
+	//MORE READABLE FORMAT:
+	//data, _ := json.MarshalIndent(respBody{Apartments: jsonApartments}, "", "\t")
 	return data
 }

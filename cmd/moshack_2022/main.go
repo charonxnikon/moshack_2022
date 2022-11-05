@@ -2,17 +2,18 @@ package main
 
 import (
 	"html/template"
+	// "mime/multipart"
+	// "moshack_2022/pkg/apartments/excelParser"
 	"moshack_2022/pkg/apartments"
 	"moshack_2022/pkg/handlers"
 
-	// "moshack_2022/pkg/items"
+	//	"os"
+
 	"moshack_2022/pkg/middleware"
 	"moshack_2022/pkg/session"
 	"moshack_2022/pkg/user"
 	"net/http"
 	"net/rpc"
-
-	// "os"
 
 	"github.com/gorilla/mux"
 
@@ -44,6 +45,26 @@ func main() {
 		panic(err) // TODO
 	}
 
+	// if len(os.Args) > 1 {
+	// 	excelParser.MakeXLSX(db.Table("db_apartments"), false, "MyNewXLSX.XLSX")
+	// 	//return
+	// 	file, err := os.Open("test.xlsx")
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
+	// 	aparts, err := excelParser.ParseXLSX(multipart.File(file), 15)
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
+
+	// 	for _, apart := range aparts {
+	// 		db.Table("db_apartments").Create(apart)
+	// 	}
+
+	// 	println(string(apartments.MarshalApartments(aparts)))
+	// 	return
+	// }
+
 	sm := session.NewSessionsManager()
 	zapLogger, _ := zap.NewProduction()
 	defer zapLogger.Sync() // flushes buffer, if any
@@ -71,13 +92,6 @@ func main() {
 		JSONrpcClient: rpcClient,
 	}
 
-	// itemsRepo := items.NewMemoryRepo()
-	// handlers := &handlers.ItemsHandler{
-	// 	Tmpl:      templates,
-	// 	Logger:    logger,
-	// 	ItemsRepo: itemsRepo,
-	// }
-
 	r := mux.NewRouter()
 
 	fileServer := http.StripPrefix("/static/", http.FileServer(http.Dir("./static/")))
@@ -99,12 +113,7 @@ func main() {
 	r.HandleFunc("/reestimation", apartmentHandler.Reestimate).Methods("POST")
 	r.HandleFunc("/finalestimation", apartmentHandler.EstimateAll).Methods("POST")
 
-	// r.HandleFunc("/items", handlers.List).Methods("GET")
-	// r.HandleFunc("/items/new", handlers.AddForm).Methods("GET")
-	// r.HandleFunc("/items/new", handlers.Add).Methods("POST")
-	// r.HandleFunc("/items/{id}", handlers.Edit).Methods("GET")
-	// r.HandleFunc("/items/{id}", handlers.Update).Methods("POST")
-	// r.HandleFunc("/items/{id}", handlers.Delete).Methods("DELETE")
+	r.HandleFunc("/downloadxls", apartmentHandler.Download).Methods("GET")
 
 	mux := middleware.Auth(sm, r)
 	mux = middleware.AccessLog(logger, mux)

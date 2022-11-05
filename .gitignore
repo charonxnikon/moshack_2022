@@ -1,6 +1,6 @@
 /vendor
 /bin
-/templates_old
+/old
 node_modules/
 .vscode
 Python3/.ipynb_checkpoints/

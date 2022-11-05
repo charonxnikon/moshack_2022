@@ -1,0 +1,11 @@
+.map {
+    margin: 20px auto 0;
+}
+
+.ymap-container {
+    height: 100%;
+
+    div[class$="-map"] {
+        height: 100%;
+    }
+}

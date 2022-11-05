@@ -6,6 +6,7 @@
             :isActive="activeLine == ind ? true : false"
             :id = "ind"
             :makeActive = "setActiveLine"
+            :calculate="calculateMethod"
         ></line-view>
     </div>
 </template>
@@ -22,6 +23,9 @@
             data: {
                 type: Array,
             },
+            calculate: {
+                type: Function,
+            },
         },
 
         data() {
@@ -33,7 +37,11 @@
         methods: {
             setActiveLine: function(ind) {
                 this.activeLine = ind;
-            }
+            },
+
+            calculateMethod: function(id) {
+                this.calculate(id);
+            },
         }
     }
 </script>
