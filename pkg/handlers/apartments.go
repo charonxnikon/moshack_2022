@@ -22,6 +22,24 @@ type ApartmentHandler struct {
 	JSONrpcClient jsonrpc.RPCClient
 }
 
+type AnalogsAdjastments struct {
+	Id        uint32        `json:"id"`
+	Analogs   []uint32      `json:"analogs"`
+	Tender    [1]float64    `json:"tender"`
+	Floor     [3][3]float64 `json:"floor"`
+	Area      [6][6]float64 `json:"area"`
+	Kitchen   [3][3]float64 `json:"kitchen"`
+	Balcony   [2][2]float64 `json:"balcony"`
+	Metro     [6][6]float64 `json:"metro"`
+	Condition [3][3]float64 `json:"condition"`
+}
+
+type AnalogsPrices struct {
+	Analogs    []uint32 `json:"Analogs"`
+	PriceM2    float64  `json:"PriceM2"`
+	TotalPrice float64  `json:"TotalPrice"`
+}
+
 func (h *ApartmentHandler) Load(w http.ResponseWriter, r *http.Request) {
 	err := h.Tmpl.ExecuteTemplate(w, "loadxls.html", nil)
 	if err != nil {
@@ -140,12 +158,7 @@ func (h *ApartmentHandler) Estimate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	type Analogs struct {
-		Analogs    []uint32 `json:"Analogs"`
-		PriceM2    float64  `json:"PriceM2"`
-		TotalPrice float64  `json:"TotalPrice"`
-	}
-	var analogs Analogs
+	var analogs AnalogsPrices
 	analogs.Analogs = make([]uint32, 0)
 	response, err := h.JSONrpcClient.Call("get_analogs", &apartmentID.Id)
 	if err != nil {
@@ -198,10 +211,106 @@ func (h *ApartmentHandler) Estimate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ApartmentHandler) Reestimate(w http.ResponseWriter, r *http.Request) {
-	// аналогично Estimate, только ещё всякие корректировки надо переслать
+	var rParams AnalogsAdjastments
+	rData, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer r.Body.Close()
+
+	err = json.Unmarshal(rData, &rParams)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	response, err := h.JSONrpcClient.Call("recalculate_price_expert_flat", &rParams)
+	if err != nil {
+		fmt.Println(err) //
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	data, ok := response.Result.(string)
+	if !ok {
+		fmt.Println("not string - ", response.Result) //
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	type ReculculatedPrice struct {
+		PriceM2    float64 `json:"Price"`
+		TotalPrice float64 `json:"TotalPrice"`
+	}
+	var prices ReculculatedPrice
+	err = json.Unmarshal([]byte(data), &prices)
+	if err != nil {
+		fmt.Println(err)             //
+		fmt.Println(response.Result) //
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	fmt.Println("Result from get_analogs:\n", prices) //
+
+	wData, ok := response.Result.([]byte)
+	if !ok {
+		fmt.Println("not []byte - ", response.Result) //
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Write(wData)
 }
 
 func (h *ApartmentHandler) EstimateAll(w http.ResponseWriter, r *http.Request) {
 	// рассчитываем весь пулл
 	// мб сразу формируем ексель и предлагаем скачать бесплатно без смс и регистрации?
+	var rParams AnalogsAdjastments
+	rData, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer r.Body.Close()
+
+	err = json.Unmarshal(rData, &rParams)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	response, err := h.JSONrpcClient.Call("calculate_pull", &rParams)
+	if err != nil {
+		fmt.Println(err) //
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	data, ok := response.Result.(string)
+	if !ok {
+		fmt.Println("not string - ", response.Result) //
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// TODO:
+	type ReculculatedPrice struct {
+		PricesM2    []float64 `json:"AllPrices"`
+		TotalPrices []float64 `json:"FinalPrice"`
+	}
+	var prices ReculculatedPrice
+	err = json.Unmarshal([]byte(data), &prices)
+	if err != nil {
+		fmt.Println(err)             //
+		fmt.Println(response.Result) //
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	fmt.Println("Result from get_analogs:\n", prices) //
+
+	wData, ok := response.Result.([]byte)
+	if !ok {
+		fmt.Println("not []byte - ", response.Result) //
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Write(wData)
 }
