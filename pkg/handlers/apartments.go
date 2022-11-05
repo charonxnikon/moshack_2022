@@ -3,12 +3,12 @@ package handlers
 import (
 	"encoding/json"
 	"html/template"
+	"io"
 	"moshack_2022/pkg/apartments"
 	"moshack_2022/pkg/apartments/excelParser"
 	"moshack_2022/pkg/session"
 	"net/http"
 	"net/rpc"
-	"strconv"
 
 	"go.uber.org/zap"
 )
@@ -122,7 +122,17 @@ func (h *ApartmentHandler) Table(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ApartmentHandler) Estimate(w http.ResponseWriter, r *http.Request) {
-	apartmentID, err := strconv.Atoi(r.FormValue("id"))
+	type ApartmentID struct {
+		Id uint32
+	}
+	var apartmentID ApartmentID
+	rData, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	err = json.Unmarshal(rData, &apartmentID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
@@ -134,7 +144,7 @@ func (h *ApartmentHandler) Estimate(w http.ResponseWriter, r *http.Request) {
 		TotalPrice float64
 	}
 	var analogs Analogs
-	h.JSONrpcClient.Call("get_analogs", apartmentID, &analogs)
+	h.JSONrpcClient.Call("get_analogs", apartmentID.Id, &analogs)
 
 	aparts := make([]*apartments.DBApartment, 0)
 	for _, id := range analogs.Analogs {
@@ -157,12 +167,12 @@ func (h *ApartmentHandler) Estimate(w http.ResponseWriter, r *http.Request) {
 		TotalPrice: analogs.TotalPrice,
 	}
 
-	data, err := json.Marshal(res)
+	wData, err := json.Marshal(res)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
-	w.Write(data)
+	w.Write(wData)
 }
 
 func (h *ApartmentHandler) Reestimate(w http.ResponseWriter, r *http.Request) {

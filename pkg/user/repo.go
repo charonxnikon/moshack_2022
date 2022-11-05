@@ -12,20 +12,12 @@ var (
 )
 
 type UserMemoryRepository struct {
-	db   *gorm.DB
-	data map[string]*user
+	db *gorm.DB
 }
 
 func NewMemoryRepo(db *gorm.DB) *UserMemoryRepository {
 	return &UserMemoryRepository{
 		db: db,
-		data: map[string]*user{
-			"rvasily": &user{
-				ID:       1,
-				Login:    "rvasily",
-				Password: "love",
-			},
-		},
 	}
 }
 
