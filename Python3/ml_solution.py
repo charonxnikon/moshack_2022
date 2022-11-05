@@ -102,7 +102,7 @@ def get_analogs_flat_idxs(id_expert_flat: int):
                                                              expert_flat)
     if not lst_nearest:
         idxs = []
-        return idxs, None
+        return idxs, None, None
 
     df2 = pd.DataFrame(lst_nearest)[["area", 'balcony']]
     df2['area'] = df2['area'].apply(lambda x: float(x))
@@ -115,7 +115,7 @@ def get_analogs_flat_idxs(id_expert_flat: int):
         idxs = df.iloc[lst_idxs, 0].values
         price = get_price(df, idxs)
 
-        return idxs, price
+        return idxs, price / expert_flat.area, price
 
     expert_value = np.array(
         [float(expert_flat.area), float(expert_flat.balcony), 0]
