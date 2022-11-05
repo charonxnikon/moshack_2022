@@ -10,7 +10,7 @@ DROP TABLE IF EXISTS db_apartments;
 CREATE TABLE users (
     id serial PRIMARY KEY,
     login varchar(25) UNIQUE,
-    password varchar(25)
+    password text
 );
 
 CREATE TABLE user_apartments(
