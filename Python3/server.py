@@ -218,7 +218,6 @@ def calculate_pull(idxs_expert_flat: tp.List[int],
     return Success(json.dumps({"all_prices": all_data.tolist(),
                    "final_price": final_result.tolist()}))
 
-<<<<<<< HEAD
 
 def tmp(idxs_expert_flat: tp.List[int],
                    idx_analogs: tp.List[int],
@@ -243,10 +242,6 @@ def ping(expert_flat_id: int, dct):
     print(expert_flat_id)
 
     return Success(1)
-=======
-    return Success(json.dumps({"Analogs": idxs_new,
-                               "PriceM2": price, "TotalPrice": total_price}))
->>>>>>> 8084f1c85a16d9777d34049831aef4fdd9e93c92
 
 
 if __name__ == "__main__":
