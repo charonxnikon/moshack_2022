@@ -12,7 +12,7 @@ import argparse
 columns_db_apartments = ["id", "user_id", "address", "rooms", "type",
                          "height", "material", "floor", "area",
                          "kitchen", "balcony", "metro", "condition",
-                         "latitude", "longitude", "price", "price_sq_meter"]
+                         "latitude", "longitude", "price", "price_m2"]
 
 
 def get_args():

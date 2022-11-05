@@ -12,12 +12,12 @@ import argparse
 columns_db_apartments = ["id", "user_id", "address", "rooms", "type",
            "height", "material", "floor", "area",
            "kitchen", "balcony", "metro", "condition",
-           "latitude", "longitude", "price", "price_sq_meter"]
+           "latitude", "longitude", "price", "price_m2"]
 
 columns_user_apartments = ["id", "user_id", "address", "rooms", "type",
            "height", "material", "floor", "area",
            "kitchen", "balcony", "metro", "condition",
-           "latitude", "longitude", "price", "price_sq_meter"]
+           "latitude", "longitude", "price", "price_m2"]
 
 
 def get_args():
@@ -26,7 +26,7 @@ def get_args():
     parser.add_argument('-p', '--port', default=5432)
     parser.add_argument('-db', '--dbname', default="moshack")
     parser.add_argument('-u', '--user', default="postgres")
-    parser.add_argument('-pw', '--password', default="777777")
+    parser.add_argument('-pw', '--password', default="3546")
 
     args_res = parser.parse_args()
 
@@ -44,9 +44,10 @@ def fill_table(table, file):
     sql2 = f"""
     COPY {table} 
     FROM '{os.getcwd() + '/' + file}'
-    DELIMITER ',' 
+    DELIMITER ','
     CSV HEADER;
     """
+    print(os.getcwd()+ '/' + file) #
     cur.execute(sql2)
 
 def get_idxs_from_table(table, idxs, columns):
