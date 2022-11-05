@@ -6,7 +6,7 @@ CREATE TABLE db_apartments(
     id serial PRIMARY KEY,
     user_id serial, 
     address text,
-    rooms smallint,
+    rooms text,
     type text,
     height smallint,
     material text,
@@ -17,5 +17,7 @@ CREATE TABLE db_apartments(
     metro integer,
     condition text,
     latitude real,
-    longitude real
+    longitude real,
+    total_price real,
+    priceM2 real
 );

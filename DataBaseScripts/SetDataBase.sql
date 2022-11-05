@@ -9,7 +9,7 @@ DROP TABLE IF EXISTS db_apartments;
 
 CREATE TABLE users (
     id serial PRIMARY KEY,
-    login varchar(25),
+    login varchar(25) UNIQUE,
     password varchar(25)
 );
 
@@ -28,7 +28,9 @@ CREATE TABLE user_apartments(
     metro integer,
     condition text,
     latitude real,
-    longitude real
+    longitude real,
+    total_price real,
+    priceM2 real
 );
 
 CREATE TABLE db_apartments(
@@ -46,5 +48,7 @@ CREATE TABLE db_apartments(
     metro integer,
     condition text,
     latitude real,
-    longitude real
+    longitude real,
+    total_price real,
+    priceM2 real
 );

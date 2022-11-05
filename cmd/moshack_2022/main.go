@@ -2,11 +2,12 @@ package main
 
 import (
 	"html/template"
-	"mime/multipart"
+	// "mime/multipart"
+	// "moshack_2022/pkg/apartments/excelParser"
 	"moshack_2022/pkg/apartments"
-	"moshack_2022/pkg/apartments/excelParser"
 	"moshack_2022/pkg/handlers"
-	"os"
+
+	//	"os"
 
 	// "moshack_2022/pkg/items"
 	"moshack_2022/pkg/middleware"
@@ -47,25 +48,25 @@ func main() {
 		panic(err) // TODO
 	}
 
-	if len(os.Args) > 1 {
-		excelParser.MakeXLSX(db.Table("db_apartments"), "MyNewXLSX.XLSX")
-		return
-		file, err := os.Open("test.xlsx")
-		if err != nil {
-			panic(err)
-		}
-		aparts, err := excelParser.ParseXLSX(multipart.File(file), 15)
-		if err != nil {
-			panic(err)
-		}
+	// if len(os.Args) > 1 {
+	// 	excelParser.MakeXLSX(db.Table("db_apartments"), false, "MyNewXLSX.XLSX")
+	// 	//return
+	// 	file, err := os.Open("test.xlsx")
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
+	// 	aparts, err := excelParser.ParseXLSX(multipart.File(file), 15)
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
 
-		for _, apart := range aparts {
-			db.Table("db_apartments").Create(apart)
-		}
+	// 	for _, apart := range aparts {
+	// 		db.Table("db_apartments").Create(apart)
+	// 	}
 
-		println(string(apartments.MarshalApartments(aparts)))
-		return
-	}
+	// 	println(string(apartments.MarshalApartments(aparts)))
+	// 	return
+	// }
 
 	sm := session.NewSessionsManager()
 	zapLogger, _ := zap.NewProduction()
@@ -121,6 +122,8 @@ func main() {
 	r.HandleFunc("/estimation", apartmentHandler.Estimate).Methods("POST")
 	r.HandleFunc("/reestimation", apartmentHandler.Reestimate).Methods("POST")
 	r.HandleFunc("/finalestimation", apartmentHandler.EstimateAll).Methods("POST")
+
+	r.HandleFunc("/downloadxls", apartmentHandler.Download).Methods("GET")
 
 	// r.HandleFunc("/items", handlers.List).Methods("GET")
 	// r.HandleFunc("/items/new", handlers.AddForm).Methods("GET")

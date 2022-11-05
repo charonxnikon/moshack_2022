@@ -21,7 +21,7 @@ type ApartmentJSON struct {
 	Longitude float64 `json:"Longitude"`
 }
 
-func MarshalApartments(apartments []*Apartment) []byte {
+func MarshalApartments(apartments []*UserApartment) []byte {
 	type respBody struct {
 		Apartments []ApartmentJSON `json:"apartments"`
 	}

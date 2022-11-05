@@ -29,6 +29,11 @@ func (h *ApartmentHandler) Load(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (h *ApartmentHandler) Download(w http.ResponseWriter, r *http.Request) {
+	//
+}
+
+
 func (h *ApartmentHandler) ParseFile(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseMultipartForm(128 * 1024 * 1024)
 	if err != nil {
