@@ -2,8 +2,6 @@ package user
 
 import "golang.org/x/crypto/bcrypt"
 
-type Hash struct{}
-
 func generateHash(password string) (string, error) {
 	hashByte, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	return string(hashByte), err
