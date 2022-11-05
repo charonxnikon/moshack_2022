@@ -19,7 +19,7 @@ def get_args():
     parser.add_argument('-p', '--port', default=5432)
     parser.add_argument('-db', '--dbname', default="moshack")
     parser.add_argument('-u', '--user', default="postgres")
-    parser.add_argument('-pw', '--password', default="777777")
+    parser.add_argument('-pw', '--password', default="3546")
 
     args = parser.parse_args()
 
@@ -42,7 +42,8 @@ def get_flats_from_radius(df, max_dist, expert_flat):
     for idx, row in df.iterrows():
         dist = calc_distance((row["latitude"], row["longitude"]),
                              (expert_flat.latitude, expert_flat.longitude))
-        if 0 <= dist < max_dist and row.id != int(expert_flat.id):
+        if 0 <= dist < max_dist:
+
             lst_nearest.append(row)
             lst_idxs.append(idx)
             lst_dists.append(dist)
@@ -69,6 +70,7 @@ def get_neighbors(id_expert_flat: int):
     tuple_flat = fetchall[0]
     expert_flat = pd.DataFrame(np.array(tuple_flat).reshape(1, len(columns_db_apartments)), columns=columns_db_apartments)
 
+    print('expert_flat', expert_flat)
     sql4 = f"""
     SELECT * 
     FROM db_apartments
@@ -78,6 +80,7 @@ def get_neighbors(id_expert_flat: int):
 
     cur.execute(sql4)
     record = cur.fetchall()
+    print('record', record)
 
     df_nearest = pd.DataFrame(record, columns=columns_db_apartments)
     df_nearest[["latitude", "longitude"]] = df_nearest[["latitude", "longitude"]].astype('float')
@@ -97,12 +100,16 @@ def get_analogs_flat_idxs(id_expert_flat: int):
     except:
         print('error')
         return
+    print('df', df)
+    print('exp', expert_flat)
     max_dist = 1
     lst_idxs, lst_dists, lst_nearest = get_flats_from_radius(df, max_dist,
                                                              expert_flat)
+    print('lst_idxs', lst_idxs)
     if not lst_nearest:
         idxs = []
-        return idxs, None
+        print('not lst nearest')
+        return idxs, None, None
 
     df2 = pd.DataFrame(lst_nearest)[["area", 'balcony']]
     df2['area'] = df2['area'].apply(lambda x: float(x))
@@ -115,7 +122,8 @@ def get_analogs_flat_idxs(id_expert_flat: int):
         idxs = df.iloc[lst_idxs, 0].values
         price = get_price(df, idxs)
 
-        return idxs, price
+        print('len(vals < 5')
+        return idxs, price / expert_flat.area, price
 
     expert_value = np.array(
         [float(expert_flat.area), float(expert_flat.balcony), 0]
@@ -129,6 +137,7 @@ def get_analogs_flat_idxs(id_expert_flat: int):
 
     idxs = df.loc[idxs_lst, "id"].values
     price = get_price(df, idxs)
+    print('idxs', idxs)
 
     return idxs, price / expert_flat.area, price,
 

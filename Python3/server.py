@@ -36,17 +36,14 @@ def recalculate_price_expert_flat_my(expert_flat_id: int,
 
 @method
 def get_analogs(id_flat: int) -> Result:
-    idxs, price, total_price = get_analogs_flat_idxs(id_flat)
-    idxs_new = list(map(int, idxs))
-    res = recalculate_price_expert_flat_my(id_flat, idxs, adjustments_default)
-    price_m2 = res["Price"]
-    total_price = res["TotalPrice"]
-
-    return Success(json.dumps({"Analogs": idxs_new,
-                               "PriceM2": price_m2, "TotalPrice": total_price}))
+    result = get_analogs_tmp(id_flat)
+    return Success(json.dumps(result))
+    
 
 def get_analogs_tmp(id_flat: int) -> tp.Any:
     idxs, price, total_price = get_analogs_flat_idxs(id_flat)
+    if idxs == []:
+        return {"Analogs": [], "PriceM2": -1.0, "TotalPrice": -1.0}
     idxs_new = list(map(int, idxs))
     res = recalculate_price_expert_flat_my(id_flat, idxs, adjustments_default)
     price_m2 = res["Price"]
@@ -119,7 +116,7 @@ if __name__ == "__main__":
     # print('final: ', tmp([1, 2], [3, 4, 5, 6, 7], {"tender": [-0.06]}))
 
     #    idxs, price, total_price = get_analogs_flat_idxs(1)
-    print(get_analogs_tmp(1))
+    print(get_analogs_tmp(7))
 
 
     try:
