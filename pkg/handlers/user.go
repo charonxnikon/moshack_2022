@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"html/template"
 	"net/http"
 
@@ -43,14 +44,15 @@ func (h *UserHandler) Index(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) LoginGET(w http.ResponseWriter, r *http.Request) {
-	errorString := r.FormValue("error")
-	err := h.Tmpl.ExecuteTemplate(w, "login.html", errorString)
+	fmt.Println("in login get") //
+	err := h.Tmpl.ExecuteTemplate(w, "login.html", r.FormValue("error"))
 	if err != nil {
 		http.Error(w, "Template errror", http.StatusInternalServerError)
 	}
 }
 
 func (h *UserHandler) LoginPOST(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("in login post") //
 	u, err := h.UserRepo.Authorize(r.FormValue("login"), r.FormValue("password"))
 	if err == user.ErrNoUser {
 		//http.Error(w, `no user`, http.StatusBadRequest)

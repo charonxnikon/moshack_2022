@@ -72,7 +72,7 @@ func ParseXLSX(file multipart.File, userID uint32) ([]*apartments.UserApartment,
 		if rowNum == 0 {
 			continue
 		}
-		if len(row) != len(excelColumnNames) {
+		if len(row) != len(excelColumnNames)-2 { // -2 because of price columns
 			errStr := fmt.Sprintf("invalid number of conumns in xls file: expected %d, got %d",
 				len(excelColumnNames),
 				len(row))

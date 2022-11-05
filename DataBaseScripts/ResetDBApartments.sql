@@ -19,5 +19,5 @@ CREATE TABLE db_apartments(
     latitude real,
     longitude real,
     total_price real,
-    priceM2 real
+    price_m2 real
 );

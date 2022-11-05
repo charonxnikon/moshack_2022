@@ -18,7 +18,7 @@ package apartments
 
 type UserApartment struct {
 	ID         uint32 `gorm:"column:id; primaryKey"`
-	UserID     uint32 `json:"-" gorm:"column:user_id"`
+	UserID     uint32 `json:"-"`
 	Address    string
 	Rooms      string
 	Type       string
@@ -32,14 +32,14 @@ type UserApartment struct {
 	Condition  string
 	Latitude   float64
 	Longitude  float64
-	TotalPrice float64 `gorm:"column:total_price"`
+	TotalPrice float64
 	PriceM2    float64
 }
 
 type DBApartment struct {
 	// что парсится с циана
 	ID         uint32 `gorm:"column:id; primaryKey"`
-	UserID     uint32 `json:"-" gorm:"column:user_id"`
+	UserID     uint32 `json:"-"`
 	Address    string
 	Rooms      string
 	Type       string
@@ -53,7 +53,7 @@ type DBApartment struct {
 	Condition  string
 	Latitude   float64
 	Longitude  float64
-	TotalPrice float64 `gorm:"column:total_price"`
+	TotalPrice float64
 	PriceM2    float64
 }
 
