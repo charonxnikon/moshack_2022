@@ -2,14 +2,15 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"io"
 	"moshack_2022/pkg/apartments"
 	"moshack_2022/pkg/apartments/excelParser"
 	"moshack_2022/pkg/session"
 	"net/http"
-	"net/rpc"
 
+	"github.com/ybbus/jsonrpc"
 	"go.uber.org/zap"
 )
 
@@ -18,7 +19,7 @@ type ApartmentHandler struct {
 	ApartmentRepo apartments.ApartmentRepo
 	Logger        *zap.SugaredLogger
 	Sessions      *session.SessionsManager
-	JSONrpcClient *rpc.Client
+	JSONrpcClient jsonrpc.RPCClient
 }
 
 func (h *ApartmentHandler) Load(w http.ResponseWriter, r *http.Request) {
@@ -128,29 +129,50 @@ func (h *ApartmentHandler) Estimate(w http.ResponseWriter, r *http.Request) {
 	var apartmentID ApartmentID
 	rData, err := io.ReadAll(r.Body)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	defer r.Body.Close()
 
 	err = json.Unmarshal(rData, &apartmentID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	type Analogs struct {
-		Analogs    []uint32
-		Price      float64
-		TotalPrice float64
+		Analogs    []uint32 `json:"Analogs"`
+		PriceM2    float64  `json:"PriceM2"`
+		TotalPrice float64  `json:"TotalPrice"`
 	}
 	var analogs Analogs
-	h.JSONrpcClient.Call("get_analogs", apartmentID.Id, &analogs)
+	analogs.Analogs = make([]uint32, 0)
+	response, err := h.JSONrpcClient.Call("get_analogs", &apartmentID.Id)
+	if err != nil {
+		fmt.Println(err) //
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	data, ok := response.Result.(string)
+	if !ok {
+		fmt.Println("not string - ", response.Result) //
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	err = json.Unmarshal([]byte(data), &analogs)
+	if err != nil {
+		fmt.Println(err)             //
+		fmt.Println(response.Result) //
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	fmt.Println("Result from get_analogs:\n", analogs) //
 
 	aparts := make([]*apartments.DBApartment, 0)
 	for _, id := range analogs.Analogs {
 		apart, err := h.ApartmentRepo.GetDBApartmentByID(id)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusUnauthorized)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		aparts = append(aparts, apart)
@@ -163,13 +185,13 @@ func (h *ApartmentHandler) Estimate(w http.ResponseWriter, r *http.Request) {
 	}
 	res := Result{
 		Analogs:    aparts,
-		PriceM2:    analogs.Price,
+		PriceM2:    analogs.PriceM2,
 		TotalPrice: analogs.TotalPrice,
 	}
 
 	wData, err := json.Marshal(res)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.Write(wData)

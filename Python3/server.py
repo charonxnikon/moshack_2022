@@ -145,7 +145,7 @@ def get_analogs_flat_idxs(id_expert_flat: int):
 def get_analogs(id_flat: int) -> Result:
 #    try:
     idxs, price, total_price = get_analogs_flat_idxs(id_flat)
-    idxs_new = list(map(float, idxs))
+    idxs_new = list(map(int, idxs))
 
     return Success(json.dumps({"Analogs": idxs_new,
                                "PriceM2": price, "TotalPrice": total_price}))
