@@ -125,13 +125,15 @@ func ParseXLSX(file multipart.File, userID uint32) ([]*apartments.Apartment, err
 
 	return result, nil
 }
-func MakeXLSX(db *gorm.DB, filePath string) (interface{}, error) {
+func MakeXLSX(db *gorm.DB, localSave bool, filePath string) (interface{}, error) {
 	const sheetName = "Квартиры"
-	if _, err := os.Stat(filePath); err == nil {
-		//указанный файл уже существует
-		err := os.Rename(filePath, filePath+"_older")
-		if err != nil {
-			return nil, err
+	if localSave {
+		if _, err := os.Stat(filePath); err == nil {
+			//указанный файл уже существует
+			err := os.Rename(filePath, filePath+"_older")
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 	var aparts []apartments.Apartment
@@ -163,7 +165,21 @@ func MakeXLSX(db *gorm.DB, filePath string) (interface{}, error) {
 		newRow.AddCell().SetString(apartment.Condition)
 	}
 
-	err = f.Save(filePath)
+	if localSave {
+		err = f.Save(filePath)
+	}
+
+	//эта функция пишет ексель в ои райтер
+	//f.Write(writer io.Writer)
+	//если это не поможет, то лучше сохранить файл локально, и отправить из него
+	//для удаления локального файла:
+	if false {
+		err := os.Remove(filePath)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	if err != nil {
 		return nil, err
 	}
