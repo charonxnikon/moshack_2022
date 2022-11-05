@@ -11,8 +11,9 @@ import (
 )
 
 const (
-	errorNoUser  = "nouser"
-	errorBadPass = "badpass"
+	errorNoUser        = "nouser"
+	errorBadPass       = "badpass"
+	errorRepeatedLogin = "repeatedlogin"
 )
 
 type UserHandler struct {
@@ -71,7 +72,7 @@ func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) Registration(w http.ResponseWriter, r *http.Request) {
-	err := h.Tmpl.ExecuteTemplate(w, "registration.html", nil)
+	err := h.Tmpl.ExecuteTemplate(w, "registration.html", r.FormValue("error"))
 	if err != nil {
 		http.Error(w, "Template errror", http.StatusInternalServerError)
 		return
@@ -81,7 +82,7 @@ func (h *UserHandler) Registration(w http.ResponseWriter, r *http.Request) {
 func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 	err := h.UserRepo.AddUser(r.FormValue("login"), r.FormValue("password"))
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Redirect(w, r, "/registration?error="+errorRepeatedLogin, http.StatusFound)
 		return
 	}
 
