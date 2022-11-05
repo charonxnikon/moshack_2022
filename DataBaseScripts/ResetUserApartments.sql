@@ -4,7 +4,7 @@ DROP TABLE IF EXISTS user_apartments;
 
 CREATE TABLE user_apartments(
     id serial PRIMARY KEY,
-    user_id serial, 
+    user_id serial,
     address text,
     rooms text,
     type text,
