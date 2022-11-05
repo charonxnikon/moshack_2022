@@ -27,11 +27,12 @@
                 <input type="text" class="form__input" name="login" id="login" value="" placeholder="Имя пользователя" required>
                 <input type="password" class="form__input" name="password" id="password" value="" placeholder="Пароль" required>
                 <input class="form__input" type="password" name="password-confirm" value="" placeholder="Повторите пароль" required>
-                <button type="submit" class="form__button">Регистрация</button>
-
+                
                 {{if ne (len .) 0}}
                     <div class="form__warning">Пользователь с таким именем уже существует!</div>
                 {{end}}
+
+                <button type="submit" class="form__button">Регистрация</button>
             </form>
         </div>
     </main>

@@ -37,7 +37,7 @@ def recalculate_price_expert_flat_my(expert_flat_id: int,
 @method
 def get_analogs(id_flat: int) -> Result:
     idxs, price, total_price = get_analogs_flat_idxs(id_flat)
-    idxs_new = list(map(float, idxs))
+    idxs_new = list(map(int, idxs))
     res = recalculate_price_expert_flat_my(id_flat, idxs, adjustments_default)
     price_m2 = res["Price"]
     total_price = res["TotalPrice"]
@@ -47,7 +47,7 @@ def get_analogs(id_flat: int) -> Result:
 
 def get_analogs_tmp(id_flat: int) -> tp.Any:
     idxs, price, total_price = get_analogs_flat_idxs(id_flat)
-    idxs_new = list(map(float, idxs))
+    idxs_new = list(map(int, idxs))
     res = recalculate_price_expert_flat_my(id_flat, idxs, adjustments_default)
     price_m2 = res["Price"]
     total_price = res["TotalPrice"]

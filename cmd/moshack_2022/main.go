@@ -2,6 +2,7 @@ package main
 
 import (
 	"html/template"
+
 	// "mime/multipart"
 	// "moshack_2022/pkg/apartments/excelParser"
 	"moshack_2022/pkg/apartments"
@@ -13,10 +14,9 @@ import (
 	"moshack_2022/pkg/session"
 	"moshack_2022/pkg/user"
 	"net/http"
-	"net/rpc/jsonrpc"
 
 	"github.com/gorilla/mux"
-
+	"github.com/ybbus/jsonrpc"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
@@ -26,7 +26,7 @@ import (
 func main() {
 
 	templates := template.Must(template.ParseGlob("./templates/*.html"))
-	//	templates := template.Must(template.ParseGlob("../../templates/*.html")) // for testing
+	//templates := template.Must(template.ParseGlob("../../templates/*.html")) // for testing
 
 	// TODO - нормальная конфигурация
 	dsn := "host=localhost user=postgres password=3546"
@@ -79,8 +79,8 @@ func main() {
 	}
 
 	apartmentRepo := apartments.NewApartmentRepo(db)
-	rpcClient, err := jsonrpc.Dial("tcp", "localhost:5000")
-	//	var rpcClient *rpc.Client
+
+	rpcClient := jsonrpc.NewClient("http://localhost:5000")
 	if err != nil {
 		logger.Error("No connection to python -", err)
 		//panic(err) // TODO
@@ -96,6 +96,7 @@ func main() {
 	r := mux.NewRouter()
 
 	fileServer := http.StripPrefix("/static/", http.FileServer(http.Dir("./static/")))
+	//fileServer := http.StripPrefix("/static/", http.FileServer(http.Dir("../../static/"))) // for testing
 	r.PathPrefix("/static/").Handler(fileServer)
 
 	r.HandleFunc("/", userHandler.Index).Methods("GET")

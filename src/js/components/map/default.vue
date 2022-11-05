@@ -1,22 +1,25 @@
 <template>
-    <div class="map" style="width: 768px; height: 432px">
-        <yandex-map :coords="data[0].coords">
-            <ymap-marker
-                v-for="(item, index) in data" :key="index"
-                :marker-id="item.id"
-                :coords="item.coords"
-                :balloon-template="balloonTemplate"
-                @click="onMarkerClick"
-            />
-        </yandex-map>
-    </div>
+    <div class="map">
+        <div class="map__header" @click="expandMap">{{ data.Address }}</div>
+
+        <map-frame
+        v-if="mapLoadOnce"
+        :data="mapData">
+    </map-frame>
+</div>
 </template>
 
 <script>
-import { yandexMap, ymapMarker } from 'vue-yandex-maps'
+import MapFrame from './map.vue';
+import Controllers from './controllers.vue';
+
+import axios from 'axios'
 
 export default {
-    components: { yandexMap, ymapMarker },
+    components: {
+        'map-frame' : MapFrame,
+        'controllers-view' : Controllers,
+    },
 
     props : {
         data: {
@@ -25,24 +28,33 @@ export default {
     },
 
     data: () => ({
-        selectedCoords: [],
-        selectedId: -1,
+        mapLoadOnce: false,
+        mapData: [],
     }),
 
-    computed: {
-        balloonTemplate() {
-            return `
-            <h1 class="red">I have id ${this.selectedId}</h1>
-            <p>I am here: ${this.selectedCoords}</p>
-            `
-        },
-    },
-
     methods: {
-        onMarkerClick(e) {
-            var marker = e.get('target');
-            this.selectedCoords = e.get('coords');
-            this.selectedId = marker.properties.get('markerId');
+        expandMap() {
+            console.log(this.data.ID);
+            const json = JSON.stringify({ id: this.data.ID });
+            axios.post('/estimation', json, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                // if (response.status == 200) {
+                //     this.mapData = response.data != "" ? response.data : null;
+                //
+                //     if (this.mapData) {
+                //         this.showMap = true;
+                //     }
+                // }
+
+                console.log(response)
+            })
+            .catch(error => {
+                console.log(error.response)
+            });
         },
     }
 }

@@ -29,9 +29,6 @@
             selectLine: {
                 type: Function,
             },
-            calculate: {
-                type: Function,
-            },
         },
 
         computed: {
@@ -97,10 +94,6 @@
             expandLine: function(e) {
                 this.hideFields = !this.hideFields;
             },
-
-            // calculateMethod: function(id) {
-            //     this.calculate(this.data.ID);
-            // },
         }
     }
 </script>

@@ -18,13 +18,16 @@
         <table-view
             v-if="showTable && loaded !== null"
             :data="loaded"
-            :calculate="calculate">
+            :getSelectedLines="getSelectedLines">
         </table-view>
 
-        <map-view
-            v-if="showMap"
-            :data="mapData">
-        </map-view>
+        <div v-if="showMaps" class="maps">
+            <map-view
+                v-for="(item, index) in selectedItems"
+                :key="index"
+                :data="item">
+            </map-view>
+        </div>
     </div>
 </template>
 
@@ -47,13 +50,21 @@ export default {
             hideForm: false,
             errorMessage: false,
             showTable: false,
-            showMap: false,
+            showMaps: false,
             loaded: null,
             mapData: null,
+            selectedItems: [],
         }
     },
 
     methods: {
+        getSelectedLines: function(inds) {
+            this.selectedItems = inds.map(ind => this.loaded[ind]);
+
+            this.showTable = false;
+            this.showMaps = true;
+        },
+
         uploadFile: function(event) {
             this.hideForm = false;
             this.errorMessage = false;
@@ -100,41 +111,25 @@ export default {
             });
         },
 
-        calculate: function(id) {
-            // axios.post('/estimation', {
-            //     'id': id,
-            // })
-            // .then(response => {
-            //     if (response.status == 200) {
-            //         this.mapData = response.data != "" ? response.data : null;
-            //
-            //         if (this.mapData) {
-            //             this.showMap = true;
-            //         }
-            //     }
-            //
-            //     console.log(response)
-            // })
-            // .catch(error => {
-            //     console.log(error.response)
-            // });
+        // calculate: function(IDs) {
 
-            this.mapData = [
-                {
-                    id: '1',
-                    coords: [55.702999, 37.530883],
-                },
-                {
-                    id: '2',
-                    coords: [55.602999, 37.630883],
-                },
-                {
-                    id: '3',
-                    coords: [55.752999, 37.540883],
-                },
-            ];
-            this.showMap = true;
-        },
+
+            // this.mapData = [
+            //     {
+            //         id: '1',
+            //         coords: [55.702999, 37.530883],
+            //     },
+            //     {
+            //         id: '2',
+            //         coords: [55.602999, 37.630883],
+            //     },
+            //     {
+            //         id: '3',
+            //         coords: [55.752999, 37.540883],
+            //     },
+            // ];
+            // this.showMap = true;
+        // },
     }
 }
 </script>
