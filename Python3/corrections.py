@@ -13,8 +13,13 @@ import typing as tp
 columns = ["id", "user_id", "adress", "rooms", "type",
            "height", "material", "floor", "area",
            "kitchen", "balcony", "metro", "condition",
-           "latitude", "longitude"]
+           "latitude", "longitude", "price", "price_m2"]
 
+condition2code = {
+    'Без отделки': 0,
+    'Муниципальный ремонт': 1,
+    'Улучшенный': 2
+}
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -54,7 +59,10 @@ def get_idxs_from_table(table, idxs):
             np.array(tuple_flat).reshape(1, len(columns)), columns=columns)
         flats.append(expert_flat)
 
-    return pd.concat(flats).reset_index().set_index('id')
+    df = pd.concat(flats).reset_index().set_index('id')
+    df.balcony = df.balcony.apply(lambda x: 1 if x == 'Да' else 0)
+
+    return df
 
 
 class AdjustmentTender:
@@ -72,16 +80,13 @@ class AdjustmentFloorFlat:
 
     @staticmethod
     def _calculate_index(flat):
-        #       print(flat.max_floor)
-        #       print(flat.floor)
-        #       print(type(flat.max_floor))
-        if flat.max_floor == flat.floor:
+        if float(flat.height) == float(flat.floor):
             return 2
 
-        if 1 < flat.floor < flat.max_floor:
+        if 1 < float(flat.floor) < float(flat.height):
             return 1
 
-        if flat.floor == 1:
+        if float(flat.floor) == 1:
             return 0
 
     def calculate(self, expert, analog):
@@ -101,7 +106,7 @@ class AdjustmentGeneral:
 
     def _calculate_index(self, flat):
         for i in range(len(self.bins) - 1):
-            if self.bins[i] <= flat[self.attr] < self.bins[i + 1]:
+            if self.bins[i] <= float(flat[self.attr]) < self.bins[i + 1]:
                 return i
 
         assert False, "Unreachable Code"
@@ -120,15 +125,14 @@ class AdjustmentRepair:
 
     @staticmethod
     def _calculate_index(flat):
-        return int(flat.repair)
+        return int(condition2code[flat.condition])
 
     def calculate(self, expert, analog):
         index_expert = self._calculate_index(expert)
         index_analog = self._calculate_index(analog)
 
-        return self. \
-                   adjustment_matr[index_expert][
-                   index_analog] / analog.price_sq_meter
+        return self.adjustment_matr[index_expert][index_analog]\
+               / float(analog.price_m2)
 
 
 data_adjustments = {
@@ -140,7 +144,7 @@ data_adjustments = {
             [0.032, -0.040, 0.000]
         ])
     ],
-    "total_area": [
+    "area": [
         np.array([
             [-0.00, 0.06, 0.14, 0.21, 0.28, 0.31],
             [-0.06, 0.00, 0.07, 0.14, 0.21, 0.24],
@@ -151,9 +155,9 @@ data_adjustments = {
         np.array([
             0, 30, 50, 65, 90, 120, float('inf')
         ]),
-        "total_area"
+        "area"
     ],
-    "kitchen_area": [
+    "kitchen": [
         np.array([
             [+0.000, -0.029, -0.083],
             [+0.030, +0.000, -0.055],
@@ -163,7 +167,7 @@ data_adjustments = {
             #            0, 7, 10, 15, float('inf')
             0, 7, 10, float('inf')
         ]),
-        "kitchen_area"
+        "kitchen"
     ],
     "balcony": [
         np.array([
@@ -173,7 +177,7 @@ data_adjustments = {
         np.array([0, float('inf')]),
         "balcony"
     ],
-    "metrodist": [
+    "metro": [
         np.array([
             [0.00, 0.07, 0.12, 0.17, 0.24, 0.29],
             [-0.07, 0.00, 0.04, 0.09, 0.15, 0.20],
@@ -184,38 +188,35 @@ data_adjustments = {
         ]),
         #        np.array([0, 5, 10, 15, 30, 60, 90, float('inf')]),
         np.array([0, 5, 10, 15, 30, 60, float('inf')]),
-        "metrodist"
+        "metro"
     ],
-    "repair": [
+    "condition": [
         np.array([
             [0, -13400, -20100],
             [13399, 0, -6700],
             [20099, 6700, 0]
         ]),
-        #        np.array([
-        #            0, 1, 2, float('inf')
-        #        ])
     ]
 }
 
 adjustments = {
     "tender": AdjustmentTender,
     "floor": AdjustmentFloorFlat,
-    "total_area": AdjustmentGeneral,
-    "kitchen_area": AdjustmentGeneral,
+    "area": AdjustmentGeneral,
+    "kitchen": AdjustmentGeneral,
     "balcony": AdjustmentGeneral,
-    "metrodist": AdjustmentGeneral,
-    "repair": AdjustmentRepair
+    "metro": AdjustmentGeneral,
+    "condition": AdjustmentRepair
 }
 
 type_adjustments = [
     "tender",
     "floor",
-    "total_area",
-    "kitchen_area",
+    "area",
+    "kitchen",
     "balcony",
-    "metrodist",
-    "repair"
+    "metro",
+    "condition"
 ]
 
 adjustments_all = []
@@ -238,18 +239,19 @@ class PullFlats:
         price of expert by analog
         and
         """
-        analog_price_sq_meter = analog.price_sq_meter
-        expert_price_sq_meter = analog_price_sq_meter
+        analog_price_sq_meter = float(analog.price_m2)
+        expert_price_sq_meter = float(analog_price_sq_meter)
         percent_corrects = 0
         for i, adjustment in enumerate(self.needed_adjustments):
             print(type_adjustments[i], end=': ')
-            percent = adjustment.calculate(expert, analog)
+            percent = float(adjustment.calculate(expert, analog))
+            print('percent: ', percent)
             expert_price_sq_meter *= (1 + percent)
             print(' : new_price: ', (1 + percent))
             print(' : new_price: ', expert_price_sq_meter)
             percent_corrects += abs(percent)
 
-        total_price = expert_price_sq_meter * analog.total_area
+        total_price = expert_price_sq_meter * float(analog.area)
 
         return total_price, expert_price_sq_meter, percent_corrects
 
@@ -259,6 +261,11 @@ class PullFlats:
         :return:
         """
         min_correct = np.min(percent_corrects)
+        if min_correct == 0:
+            min_idxs = np.argmin(percent_corrects)
+            weights = np.zeros_like(percent_corrects)
+            weights[min_idxs] = 1 / len(min_idxs)
+            return weights
         inv_percent_corrects = min_correct / percent_corrects
         inv_sum = 1 / np.sum(inv_percent_corrects)
         return inv_percent_corrects * inv_sum
@@ -273,7 +280,8 @@ class PullFlats:
         prices_total_analogs = []
         prices_sq_meter_analogs = []
         percent_corrects = []
-        expert_flat = pull_analogs.loc[str(id_expert_flat), :]
+        expert_flat = pull_analogs.iloc[str(id_expert_flat) == pull_analogs.index, :]
+#        expert_flat = pull_analogs.loc[int(id_expert_flat), :]
         for index, row in pull_analogs.iterrows():
             if index != id_expert_flat:
                 analog_flat = pull_analogs.loc[index, :]
@@ -295,7 +303,7 @@ data_flats = {
     "kitchen_area": [15, 14, 12, 11.5],
     "balcony": [1, 1, 1, 1],
     "metrodist": [11, 10, 14, 11],
-    "repair": [1, 2, 2, 2],
+    "condition": [1, 2, 2, 2],
     #  other parameters without correction
     "max_floor": [22, 24, 18, 18],
     "NumberRooms": [2, 2, 2, 2],
@@ -306,22 +314,20 @@ data_flats = {
 
 
 def recalculate_price_expert(expert_idx: int,
-                             analogs_idx: tp.List[int],
+                             analogs_idxs: tp.List[int],
                              adjustments):
     """
     :param expert_idx: id_expert  from table of apartments
-    :param analogs_idx: analogs list idxs from table of user_analogs
+    :param analogs_idxs: analogs list idxs from table of user_analogs
     :param adjustments:
     :return:
     """
     expert_flat = get_idxs_from_table('db_apartments', [expert_idx])
-    analogs_flat = get_idxs_from_table('user_apartments', analogs_idx)
+    analogs_flat = get_idxs_from_table('user_apartments', analogs_idxs)
     all_flats = pd.concat([expert_flat, analogs_flat])
     pull_flats_df = pd.DataFrame.from_dict(all_flats)
     pull_flats = PullFlats(needed_adjustments=adjustments)
     pull_flats_df = pull_flats_df.reset_index().set_index('id')
-    pull_flats_df["price_sq_meter"] = \
-        pull_flats_df["price"] / pull_flats_df["area"]
 
     return pull_flats.calculate_pull(1, pull_flats_df)
 
@@ -329,4 +335,4 @@ def recalculate_price_expert(expert_idx: int,
 # pull_flats_df = pd.DataFrame.from_dict(data_flats)
 # pull_flats = PullFlats(needed_adjustments=adjustments_all)
 # print(pull_flats.calculate_pull(0, pull_flats_df))
-recalculate_price_expert(1, [3, 4, 5, 6], adjustments_all)
+# print(recalculate_price_expert(1, [3, 4, 5, 6], adjustments_all))
