@@ -26,7 +26,7 @@ def get_args():
     parser.add_argument('-p', '--port', default=5432)
     parser.add_argument('-db', '--dbname', default="moshack")
     parser.add_argument('-u', '--user', default="postgres")
-    parser.add_argument('-pw', '--password', default="3546")
+    parser.add_argument('-pw', '--password', default="777777")
 
     args_res = parser.parse_args()
 

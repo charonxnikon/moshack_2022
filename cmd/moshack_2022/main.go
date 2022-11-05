@@ -82,7 +82,8 @@ func main() {
 	rpcClient, err := jsonrpc.Dial("tcp", "localhost:5000")
 	//	var rpcClient *rpc.Client
 	if err != nil {
-		panic(err) // TODO
+		logger.Error("No connection to python!!!")
+		//panic(err) // TODO
 	}
 	apartmentHandler := &handlers.ApartmentHandler{
 		Tmpl:          templates,
