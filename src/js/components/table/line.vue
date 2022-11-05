@@ -1,5 +1,5 @@
 <template>
-    <div class="table__line" :class="lineClass" @click="handleClick">
+    <div class="table__line" :class="hideFields ? 'table__line-collapsed' : ''">
         <div class="table__line-fields">
             <div class="table__field table__field-wide" @click="expandLine">
                 <span class="table__field-label">Адрес</span>
@@ -11,8 +11,8 @@
             </div>
         </div>
 
-        <div v-if="isActive" class="table__line-navigation">
-            <button class="table__button" type="button" @click="calculateMethod">Рассчитать</button>
+        <div class="table__line-navigation">
+            <button class="table__button" :class="!isSelected ? '' : 'table__button-remove'" type="button" @click="handleClick"></button>
         </div>
     </div>
 </template>
@@ -23,14 +23,10 @@
             data: {
                 type: Array,
             },
-            isActive: {
-                type: Boolean,
-                default: false,
-            },
             id: {
                 type: Number,
             },
-            makeActive: {
+            selectLine: {
                 type: Function,
             },
             calculate: {
@@ -39,12 +35,6 @@
         },
 
         computed: {
-            lineClass: function() {
-                var currClass = this.isActive ? 'table__line-active ' : '';
-                currClass += this.hideFields ? 'table__line-collapsed ' : '';
-                return currClass;
-            },
-
             fields: function() {
                 var keys = Object.keys(this.data).filter(key => !(['ID', 'Latitude', 'Longitude', 'Address'].includes(key)));
 
@@ -94,21 +84,23 @@
         data() {
             return {
                 hideFields: true,
+                isSelected: false,
             }
         },
 
         methods: {
             handleClick: function() {
-                this.makeActive(this.id);
+                this.isSelected = !this.isSelected;
+                this.selectLine(this.id);
             },
 
-            expandLine: function() {
+            expandLine: function(e) {
                 this.hideFields = !this.hideFields;
             },
 
-            calculateMethod: function(id) {
-                this.calculate(this.data.ID);
-            },
+            // calculateMethod: function(id) {
+            //     this.calculate(this.data.ID);
+            // },
         }
     }
 </script>

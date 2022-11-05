@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"html/template"
 	"net/http"
 
@@ -12,8 +11,9 @@ import (
 )
 
 const (
-	errorNoUser  = "nouser"
-	errorBadPass = "badpass"
+	errorNoUser        = "nouser"
+	errorBadPass       = "badpass"
+	errorRepeatedLogin = "repeatedlogin"
 )
 
 type UserHandler struct {
@@ -44,7 +44,6 @@ func (h *UserHandler) Index(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) LoginGET(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("in login get") //
 	err := h.Tmpl.ExecuteTemplate(w, "login.html", r.FormValue("error"))
 	if err != nil {
 		http.Error(w, "Template errror", http.StatusInternalServerError)
@@ -52,22 +51,18 @@ func (h *UserHandler) LoginGET(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) LoginPOST(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("in login post") //
 	u, err := h.UserRepo.Authorize(r.FormValue("login"), r.FormValue("password"))
 	if err == user.ErrNoUser {
-		//http.Error(w, `no user`, http.StatusBadRequest)
 		http.Redirect(w, r, "/login?error="+errorNoUser, http.StatusFound)
 		return
 	}
 	if err == user.ErrBadPass {
-		//http.Error(w, `bad pass`, http.StatusBadRequest)
 		http.Redirect(w, r, "/login?error="+errorBadPass, http.StatusFound)
 		return
 	}
 
 	sess, _ := h.Sessions.Create(w, u.ID)
 	h.Logger.Infof("created session for %v", sess.UserID)
-	//http.Redirect(w, r, "/", http.StatusFound)
 	http.Redirect(w, r, "/loadxls", http.StatusFound)
 }
 
@@ -77,7 +72,7 @@ func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) Registration(w http.ResponseWriter, r *http.Request) {
-	err := h.Tmpl.ExecuteTemplate(w, "registration.html", nil)
+	err := h.Tmpl.ExecuteTemplate(w, "registration.html", r.FormValue("error"))
 	if err != nil {
 		http.Error(w, "Template errror", http.StatusInternalServerError)
 		return
@@ -87,7 +82,7 @@ func (h *UserHandler) Registration(w http.ResponseWriter, r *http.Request) {
 func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 	err := h.UserRepo.AddUser(r.FormValue("login"), r.FormValue("password"))
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Redirect(w, r, "/registration?error="+errorRepeatedLogin, http.StatusFound)
 		return
 	}
 

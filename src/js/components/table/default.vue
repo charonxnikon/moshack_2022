@@ -1,13 +1,18 @@
 <template>
     <div class="table">
-        <line-view
-            v-for="(item, ind) in data" :key="ind"
-            :data="item"
-            :isActive="activeLine == ind ? true : false"
-            :id = "ind"
-            :makeActive = "setActiveLine"
-            :calculate="calculateMethod"
-        ></line-view>
+        <div class="table__content">
+            <line-view
+                v-for="(item, ind) in data" :key="ind"
+                :data="item"
+                :id="ind"
+                :selectLine="selectLine"
+                :calculate="calculateMethod"
+            ></line-view>
+        </div>
+
+        <div class="table__footer">
+            <button class="table__submit" type="button" @click="calculateMethod">Рассчитать</button>
+        </div>
     </div>
 </template>
 
@@ -30,18 +35,28 @@
 
         data() {
             return {
-                activeLine: -1,
+                selectedLines: {},
             }
         },
 
+        computed: {
+            dataMapped: function() {
+                return Object.assign({}, this.data);
+            },
+        },
+
         methods: {
-            setActiveLine: function(ind) {
-                this.activeLine = ind;
+            selectLine: function(ind) {
+                if (this.selectedLines[ind] === undefined) {
+                    this.selectedLines[ind] = true;
+                } else {
+                    this.selectedLines[ind] = !this.selectedLines[ind];
+                }
             },
 
-            calculateMethod: function(id) {
-                this.calculate(id);
+            calculateMethod: function() {
+                this.calculate(this.selectedLines);
             },
-        }
+        },
     }
 </script>

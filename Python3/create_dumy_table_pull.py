@@ -12,12 +12,12 @@ import argparse
 columns_db_apartments = ["id", "user_id", "address", "rooms", "type",
            "height", "material", "floor", "area",
            "kitchen", "balcony", "metro", "condition",
-           "latitude", "longitude", "price", "price_m2"]
+           "latitude", "longitude", "total_price", "price_m2"]
 
 columns_user_apartments = ["id", "user_id", "address", "rooms", "type",
            "height", "material", "floor", "area",
            "kitchen", "balcony", "metro", "condition",
-           "latitude", "longitude", "price", "price_m2"]
+           "latitude", "longitude", "total_price", "price_m2"]
 
 
 def get_args():
@@ -42,7 +42,7 @@ cur = conn.cursor()
 def fill_table(table, file):
     import os
     sql2 = f"""
-    COPY {table} 
+    COPY {table} ({", ".join(columns_user_apartments[1:])})
     FROM '{os.getcwd() + '/' + file}'
     DELIMITER ','
     CSV HEADER;
@@ -56,7 +56,7 @@ def get_idxs_from_table(table, idxs, columns):
         sql3 = f"""
         SELECT *
         FROM {table} 
-        WHERE Id = {idx}
+        WHERE id = {idx}
         """
         cur.execute(sql3)
         fetchall = cur.fetchall()

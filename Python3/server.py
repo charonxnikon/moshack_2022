@@ -13,7 +13,7 @@ import argparse
 columns_db_apartments = ["id", "user_id", "address", "rooms", "type",
                          "height", "material", "floor", "area",
                          "kitchen", "balcony", "metro", "condition",
-                         "latitude", "longitude", "price", "price_m2"]
+                         "latitude", "longitude", "total_price", "price_m2"]
 
 
 def get_args():
@@ -89,7 +89,7 @@ def get_neighbors(id_expert_flat: int):
 
 def get_price(df, idxs):
     df = df.set_index("id")
-    price = np.mean(df.loc[idxs, "price"].values)
+    price = np.mean(df.loc[idxs, "total_price"].values)
 
     return price
 
@@ -142,8 +142,8 @@ def get_analogs(id_flat: int) -> Result:
     idxs, price, total_price = get_analogs_flat_idxs(id_flat)
     idxs_new = list(map(float, idxs))
 
-    return Success(json.dumps({"analogs": idxs_new,
-                               "price": price, "totalPrice": total_price}))
+    return Success(json.dumps({"Analogs": idxs_new,
+                               "PriceM2": price, "TotalPrice": total_price}))
 
 from corrections import type_adjustments, data_adjustments
 from corrections import adjustments as adjustments_not_inits
@@ -218,6 +218,7 @@ def calculate_pull(idxs_expert_flat: tp.List[int],
     return Success(json.dumps({"all_prices": all_data.tolist(),
                    "final_price": final_result.tolist()}))
 
+<<<<<<< HEAD
 
 def tmp(idxs_expert_flat: tp.List[int],
                    idx_analogs: tp.List[int],
@@ -242,6 +243,10 @@ def ping(expert_flat_id: int, dct):
     print(expert_flat_id)
 
     return Success(1)
+=======
+    return Success(json.dumps({"Analogs": idxs_new,
+                               "PriceM2": price, "TotalPrice": total_price}))
+>>>>>>> 8084f1c85a16d9777d34049831aef4fdd9e93c92
 
 
 if __name__ == "__main__":

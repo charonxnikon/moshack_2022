@@ -128,19 +128,41 @@ func (h *ApartmentHandler) Estimate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// здесь пишем JSON-rpc к питухону с запросом на посчитать и подобрать аналоги
-	// по сути просто пересылаем id квартиры (квартир?)
-
-	// надо определиться с типом возвращаемого значения
 	type Analogs struct {
-		analogs    []uint32
-		price      float64
-		totalPrice float64
+		Analogs    []uint32
+		Price      float64
+		TotalPrice float64
 	}
 	var analogs Analogs
 	h.JSONrpcClient.Call("get_analogs", apartmentID, &analogs)
 
-	// перебираем id'шники, достаём квартиры из базы, приводим к нужному типу, пишем их в ответ
+	aparts := make([]*apartments.DBApartment, 0)
+	for _, id := range analogs.Analogs {
+		apart, err := h.ApartmentRepo.GetDBApartmentByID(id)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+		aparts = append(aparts, apart)
+	}
+
+	type Result struct {
+		Analogs    []*apartments.DBApartment
+		PriceM2    float64
+		TotalPrice float64
+	}
+	res := Result{
+		Analogs:    aparts,
+		PriceM2:    analogs.Price,
+		TotalPrice: analogs.TotalPrice,
+	}
+
+	data, err := json.Marshal(res)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	w.Write(data)
 }
 
 func (h *ApartmentHandler) Reestimate(w http.ResponseWriter, r *http.Request) {
