@@ -32,8 +32,8 @@ type UserApartment struct {
 	Condition  string
 	Latitude   float64
 	Longitude  float64
-	totalPrice float64 `gorm:"column:total_price"`
-	priceM2    float64
+	TotalPrice float64 `gorm:"column:total_price"`
+	PriceM2    float64
 }
 
 type DBApartment struct {
@@ -53,8 +53,8 @@ type DBApartment struct {
 	Condition  string
 	Latitude   float64
 	Longitude  float64
-	totalPrice float64 `gorm:"column:total_price"`
-	priceM2    float64
+	TotalPrice float64 `gorm:"column:total_price"`
+	PriceM2    float64
 }
 
 type ApartmentRepo interface {

@@ -30,12 +30,33 @@ func (h *ApartmentHandler) Load(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ApartmentHandler) Download(w http.ResponseWriter, r *http.Request) {
-	//
+	userSession, err := h.Sessions.Check(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	aparts, err := h.ApartmentRepo.GetAllUserApartmentsByUserID(userSession.UserID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	file, err := excelParser.UnparseXLSX(aparts)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = file.Write(w)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
-
 func (h *ApartmentHandler) ParseFile(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseMultipartForm(128 * 1024 * 1024)
+	err := r.ParseMultipartForm(128 * 1024 * 1024) // 128 MBytes
 	if err != nil {
 		http.Error(w, "File errror: file is too much", http.StatusInternalServerError)
 		return

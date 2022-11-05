@@ -37,8 +37,10 @@ var excelColumnNames = []string{
 	"Площадь квартиры",
 	"Площадь кухни",
 	"Тип балкона",
-	"Удаленность от метро",
+	"Удалённость от метро",
 	"Состояние",
+	"Стоимость",
+	"Стоимость кв.м.",
 }
 
 func invalidValueError(row int, cell int, err error) error {
@@ -215,8 +217,37 @@ func ParseXLS(file multipart.File, userID uint32) ([]*apartments.UserApartment, 
 // 	return excelSheet
 // }
 
-func MakeXLSX(aparts []apartments.UserApartment) (multipart.File, error) {
-	return nil, nil
+func UnparseXLSX(aparts []apartments.UserApartment) (*xlsx.File, error) {
+	file := xlsx.NewFile()
+	sheet, err := file.AddSheet("Результат рассчёта")
+	if err != nil {
+		return nil, err
+	}
+
+	newRow := sheet.AddRow()
+	for _, cellName := range excelColumnNames {
+		newCell := newRow.AddCell()
+		newCell.SetString(cellName)
+	}
+
+	for _, apartment := range aparts {
+		newRow := sheet.AddRow()
+		newRow.AddCell().SetString(apartment.Address)
+		newRow.AddCell().SetString(apartment.Rooms)
+		newRow.AddCell().SetString(apartment.Type)
+		newRow.AddCell().SetInt(int(apartment.Height))
+		newRow.AddCell().SetString(apartment.Material)
+		newRow.AddCell().SetInt(int(apartment.Floor))
+		newRow.AddCell().SetFloat(apartment.Area)
+		newRow.AddCell().SetFloat(apartment.Kitchen)
+		newRow.AddCell().SetString(apartment.Balcony)
+		newRow.AddCell().SetInt(apartment.Metro)
+		newRow.AddCell().SetString(apartment.Condition)
+		newRow.AddCell().SetFloat(apartment.TotalPrice)
+		newRow.AddCell().SetFloat(apartment.PriceM2)
+	}
+
+	return file, nil
 }
 
 func MakeXLSX_OLD(db *gorm.DB, localSave bool, filePath string) (interface{}, error) {
