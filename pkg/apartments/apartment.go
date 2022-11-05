@@ -20,7 +20,7 @@ type Apartment struct {
 	ID        uint32 `gorm:"column:id; primaryKey"`
 	UserID    uint32 `json:"-" gorm:"column:user_id"`
 	Address   string
-	Rooms     int16
+	Rooms     string
 	Type      string
 	Height    int16
 	Material  string

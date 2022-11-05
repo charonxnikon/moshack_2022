@@ -50,7 +50,7 @@ func (h *ApartmentHandler) ParseFile(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
-	aparts, err := excelParser.ParseXLS(file, userSession.UserID)
+	aparts, err := excelParser.ParseXLSX(file, userSession.UserID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
