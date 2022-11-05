@@ -7,8 +7,9 @@ import (
 )
 
 var (
-	ErrNoUser  = errors.New("no user found")
-	ErrBadPass = errors.New("invalid password")
+	ErrNoUser       = errors.New("no user found")
+	ErrBadPass      = errors.New("invalid password")
+	ErrRepeatedUser = errors.New("user already exists")
 )
 
 type UserMemoryRepository struct {
@@ -36,11 +37,16 @@ func (repo *UserMemoryRepository) Authorize(login, pass string) (*user, error) {
 }
 
 func (repo *UserMemoryRepository) AddUser(login, password string) error {
+	oldUser := make([]user, 0)
+	repo.db.Where("login = ?", login).Find(&oldUser)
+	if len(oldUser) != 0 {
+		return ErrRepeatedUser
+	}
+
 	newUser := user{
 		Login:    login,
 		Password: password,
 	}
-
 	db := repo.db.Create(&newUser)
 	if db.Error != nil {
 		return db.Error
