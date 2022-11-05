@@ -13,7 +13,7 @@ import (
 	"moshack_2022/pkg/session"
 	"moshack_2022/pkg/user"
 	"net/http"
-	"net/rpc"
+	"net/rpc/jsonrpc"
 
 	"github.com/gorilla/mux"
 
@@ -79,8 +79,8 @@ func main() {
 	}
 
 	apartmentRepo := apartments.NewApartmentRepo(db)
-	//rpcClient, err := jsonrpc.Dial("localhost:", "8081")
-	var rpcClient *rpc.Client
+	rpcClient, err := jsonrpc.Dial("tcp", "localhost:5000")
+	//	var rpcClient *rpc.Client
 	if err != nil {
 		panic(err) // TODO
 	}
