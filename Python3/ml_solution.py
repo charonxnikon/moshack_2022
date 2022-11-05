@@ -42,7 +42,7 @@ def get_flats_from_radius(df, max_dist, expert_flat):
     for idx, row in df.iterrows():
         dist = calc_distance((row["latitude"], row["longitude"]),
                              (expert_flat.latitude, expert_flat.longitude))
-        if 0 <= dist < max_dist:
+        if 0 <= dist < max_dist and row.id != int(expert_flat.id):
             lst_nearest.append(row)
             lst_idxs.append(idx)
             lst_dists.append(dist)

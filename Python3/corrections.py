@@ -262,9 +262,11 @@ class PullFlats:
         """
         min_correct = np.min(percent_corrects)
         if min_correct == 0:
-            min_idxs = np.argmin(percent_corrects)
-            weights = np.zeros_like(percent_corrects)
-            weights[min_idxs] = 1 / len(min_idxs)
+            min_idx = np.argmin(percent_corrects)
+            weights = np.zeros_like(percent_corrects, dtype=float)
+            number_min_idxs = sum(percent_corrects == 0)
+            weights[percent_corrects == 0] = 1 / number_min_idxs
+            print('weights: ', weights)
             return weights
         inv_percent_corrects = min_correct / percent_corrects
         inv_sum = 1 / np.sum(inv_percent_corrects)
