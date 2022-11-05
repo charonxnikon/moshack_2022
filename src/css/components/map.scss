@@ -1,5 +1,29 @@
 .map {
     margin: 20px auto 0;
+
+    &__header {
+        position: relative;
+        margin-bottom: 10px;
+        padding: 10px;
+        border-radius: 5px;
+        background-color: #d6d6d6;
+        color: #465488;
+        cursor: pointer;
+
+        &::after {
+            content: '';
+            position: absolute;
+            right: 15px;
+            top: calc(50% - 5px);
+            top: 50%;
+            width: 15px;
+            height: 15px;
+            border-right: 2px solid #465488;
+            border-bottom: 2px solid #465488;
+            transform: rotate(45deg) translate(-10px, -8px);
+            transition: transform .3s;
+        }
+    }
 }
 
 .ymap-container {

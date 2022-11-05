@@ -6,12 +6,11 @@
                 :data="item"
                 :id="ind"
                 :selectLine="selectLine"
-                :calculate="calculateMethod"
             ></line-view>
         </div>
 
         <div class="table__footer">
-            <button class="table__submit" type="button" @click="calculateMethod">Рассчитать</button>
+            <button class="table__submit" type="button" @click="getSelected">Рассчитать</button>
         </div>
     </div>
 </template>
@@ -28,7 +27,7 @@
             data: {
                 type: Array,
             },
-            calculate: {
+            getSelectedLines: {
                 type: Function,
             },
         },
@@ -36,13 +35,8 @@
         data() {
             return {
                 selectedLines: {},
+                selectedItems: [],
             }
-        },
-
-        computed: {
-            dataMapped: function() {
-                return Object.assign({}, this.data);
-            },
         },
 
         methods: {
@@ -54,8 +48,12 @@
                 }
             },
 
-            calculateMethod: function() {
-                this.calculate(this.selectedLines);
+            getSelected: function() {
+                var selectedIndexes = Object.keys(this.selectedLines).filter(key => this.selectedLines[key]);
+                if (selectedIndexes.length == 0) {
+                    return;
+                }
+                this.getSelectedLines(selectedIndexes);
             },
         },
     }
