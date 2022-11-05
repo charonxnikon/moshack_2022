@@ -29,7 +29,7 @@ func (repo *UserMemoryRepository) Authorize(login, pass string) (*user, error) {
 		return nil, ErrNoUser
 	}
 
-	if users[0].Password != pass {
+	if !checkPassword(pass, users[0].Password) {
 		return nil, ErrBadPass
 	}
 
@@ -43,9 +43,13 @@ func (repo *UserMemoryRepository) AddUser(login, password string) error {
 		return ErrRepeatedUser
 	}
 
+	hashedPassword, err := generateHash(password)
+	if err != nil {
+		return err
+	}
 	newUser := user{
 		Login:    login,
-		Password: password,
+		Password: hashedPassword,
 	}
 	db := repo.db.Create(&newUser)
 	if db.Error != nil {
