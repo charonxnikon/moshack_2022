@@ -10,6 +10,10 @@ import psycopg2
 import geopy.distance
 import argparse
 
+from corrections import type_adjustments, data_adjustments
+from corrections import adjustments as adjustments_not_inits
+from copy import deepcopy
+
 columns_db_apartments = ["id", "user_id", "address", "rooms", "type",
                          "height", "material", "floor", "area",
                          "kitchen", "balcony", "metro", "condition",
@@ -37,6 +41,7 @@ cur = conn.cursor()
 
 def calc_distance(coords_1, coords_2):
     return geopy.distance.geodesic(coords_1, coords_2).km
+
 def get_flats_from_radius(df, max_dist, expert_flat):
     lst_nearest = []
     lst_idxs = []
@@ -144,10 +149,6 @@ def get_analogs(id_flat: int) -> Result:
 
     return Success(json.dumps({"Analogs": idxs_new,
                                "PriceM2": price, "TotalPrice": total_price}))
-
-from corrections import type_adjustments, data_adjustments
-from corrections import adjustments as adjustments_not_inits
-from copy import deepcopy
 @method
 def recalculate_price_expert_flat(expert_flat_id: int,
                                   analog_idxs: tp.List[int],
@@ -167,7 +168,7 @@ def recalculate_price_expert_flat(expert_flat_id: int,
     price, total_price = \
         recalculate_price_expert(expert_flat_id, analogs_idxs=analog_idxs,
                                  adjustments=my_adjustments_all)
-    return Success(json.dumps({"price": price, "totalPrice": total_price}))
+    return Success(json.dumps({"Price": price, "TotalPrice": total_price}))
 
 def recalculate_price_expert_flat_my(expert_flat_id: int,
                                   analog_idxs: tp.List[int],
@@ -187,7 +188,7 @@ def recalculate_price_expert_flat_my(expert_flat_id: int,
     price, total_price = \
         recalculate_price_expert(expert_flat_id, analogs_idxs=analog_idxs,
                                  adjustments=my_adjustments_all)
-    return {"price": price, "totalPrice": total_price}
+    return {"Price": price, "TotalPrice": total_price}
 
 def calculate_pull_one_expert(id_expert_flat: int,
                    idx_analogs: tp.List[int],
@@ -215,8 +216,8 @@ def calculate_pull(idxs_expert_flat: tp.List[int],
     final_result = np.mean(all_data, axis=0)
 #    all_data = list(map())
 
-    return Success(json.dumps({"all_prices": all_data.tolist(),
-                   "final_price": final_result.tolist()}))
+    return Success(json.dumps({"AllPrices": all_data.tolist(),
+                   "FinalPrice": final_result.tolist()}))
 
 
 def tmp(idxs_expert_flat: tp.List[int],
@@ -230,8 +231,8 @@ def tmp(idxs_expert_flat: tp.List[int],
 
     all_data = np.array(lst_all)
     final_result = np.mean(all_data, axis=0)
-    print("IT'S HERE\n", json.dumps({"all_prices": all_data.tolist(),
-                   "final_price": final_result.tolist()}))
+#    print("IT'S HERE\n", json.dumps({"all_prices": all_data.tolist(),
+#                   "final_price": final_result.tolist()}))
 
     return lst_all
 
