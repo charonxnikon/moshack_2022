@@ -68,6 +68,12 @@
                         case 'Condition':
                             label = 'Состояние';
                                 break;
+                        case 'PriceM2':
+                            label = 'Цена за квадратный метр';
+                                break;
+                        case 'TotalPrice':
+                            label = 'Цена';
+                                break;
                     }
 
                     return {
