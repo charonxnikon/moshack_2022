@@ -13,6 +13,9 @@
 
 <body>
     <header class="header">
+        <div class="header__logo">
+            <img src="/static/img/logo.png" alt="Logo">
+        </div>
         <div class="header__login">
             <a href="/registration">Регистрация</a>
             <a href="/login">Войти</a>
@@ -20,20 +23,23 @@
     </header>
 
     <main class="main">
-        <div class="main__cover"></div>
-
         <div class="main__content">
             <form id="signup-form" class="form" method="POST" action="/registration">
                 <input type="text" class="form__input" name="login" id="login" value="" placeholder="Имя пользователя" required>
                 <input type="password" class="form__input" name="password" id="password" value="" placeholder="Пароль" required>
                 <input class="form__input" type="password" name="password-confirm" value="" placeholder="Повторите пароль" required>
-                
+
                 {{if ne (len .) 0}}
                     <div class="form__warning">Пользователь с таким именем уже существует!</div>
                 {{end}}
 
                 <button type="submit" class="form__button">Регистрация</button>
             </form>
+
+            <div class="main__logos">
+                <img src="/static/img/logo1.png" alt="Logo 1">
+                <img src="/static/img/logo2.png" alt="Logo 2">
+            </div>
         </div>
     </main>
 

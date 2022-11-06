@@ -12,6 +12,9 @@
 
 <body>
     <header class="header">
+        <div class="header__logo">
+            <img src="/static/img/logo.png" alt="Logo">
+        </div>
         <div class="header__login">
             <a href="/registration">Регистрация</a>
             <a href="/login">Войти</a>
@@ -19,8 +22,6 @@
     </header>
 
     <main class="main">
-        <div class="main__cover"></div>
-
         <div class="main__content">
             {{ template "main" . }}
         </div>
