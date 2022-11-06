@@ -15,10 +15,10 @@ columns = ["id", "user_id", "address", "rooms", "type",
            "kitchen", "balcony", "metro", "condition",
            "latitude", "longitude", "price", "price_m2"]
 
-condition2code = {
-    'Без отделки': 0,
-    'Муниципальный ремонт': 1,
-    'Современное жилье': 2
+condition2number = {
+    'без отделки': 0,
+    'муниципальный ремонт': 1,
+    'современная отделка': 2
 }
 
 
@@ -129,7 +129,7 @@ class AdjustmentRepair:
 
     @staticmethod
     def _calculate_index(flat):
-        return int(condition2code[flat.condition])
+        return int(condition2number[flat.condition.lower()])
 
     def calculate(self, expert, analog):
         index_expert = self._calculate_index(expert)
