@@ -186,6 +186,7 @@ def get_neighbors(id_expert_flat: int):
     cur.execute(sql3)
     fetchall = cur.fetchall()
     if not fetchall:
+        print("don't id in db")
         raise ValueError("Don't Id in db")
     tuple_flat = fetchall[0]
     expert_flat = pd.DataFrame(
@@ -225,7 +226,7 @@ def get_analogs_flat_idxs(id_expert_flat: int):
         df, expert_flat = get_neighbors(id_expert_flat)
     except:
         print('error')
-        return
+        return [], None, None
     print('df', df)
     print('exp', expert_flat)
     max_dist = 1

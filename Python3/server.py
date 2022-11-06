@@ -124,23 +124,8 @@ def recalculate_price_expert_flat(id: int,
 
 def calculate_pull_one_expert(id_expert_flat: int,
                               idx_analogs: tp.List[int],
-                              tender: tp.List[tp.List[int]],
-                              floor: tp.List[tp.List[int]],
-                              area: tp.List[tp.List[int]],
-                              kitchen: tp.List[tp.List[int]],
-                              balcony: tp.List[tp.List[int]],
-                              metro: tp.List[tp.List[int]],
-                              condition: tp.List[tp.List[int]]) -> Result:
+                              needed_adjustments) -> Result:
 
-    needed_adjustments = {
-        "tender": [np.array((np.array(tender) / 100).tolist())],
-        "floor": [np.array((np.array(floor) / 100).tolist())],
-        "area": [np.array((np.array(area) / 100).tolist())],
-        "kitchen": [np.array((np.array(kitchen) / 100).tolist())],
-        "balcony": [np.array((np.array(balcony) / 100).tolist())],
-        "metro": [np.array((np.array(metro) / 100).tolist())],
-        "condition": [np.array((np.array(condition)).tolist())]
-    }
     lst_price_total_price = []
     for idx_analog in idx_analogs:
         dct = recalculate_price_expert_flat_my(idx_analog,
@@ -184,7 +169,7 @@ def update_prices(idx_analogs: tp.List[int], final_prices: tp.List[tp.List[int]]
 
 def calculate_pull_my(idxs_expert_flat: tp.List[int],
                       user_id: int,
-                      needed_adjustments):
+                      needed_adjustments) -> Result:
     lst_all = []
     all_analogs = get_idxs_pull(user_id, 'user_apartments')
     print('all_analogs: ', all_analogs)
@@ -210,12 +195,27 @@ def calculate_pull_my(idxs_expert_flat: tp.List[int],
 
 
 @method
-def calculate_pull(idxs_expert_flat: tp.List[int],
+def calculate_pull(Samples: tp.List[int],
                    user_id: int,
-                   needed_adjustments):
-    result = calculate_pull_my(idxs_expert_flat, user_id,
+                      tender: tp.List[tp.List[int]],
+                      floor: tp.List[tp.List[int]],
+                      area: tp.List[tp.List[int]],
+                      kitchen: tp.List[tp.List[int]],
+                      balcony: tp.List[tp.List[int]],
+                      metro: tp.List[tp.List[int]],
+                      condition: tp.List[tp.List[int]]) -> Result:
+    needed_adjustments = {
+        "tender": [np.array((np.array(tender) / 100).tolist())],
+        "floor": [np.array((np.array(floor) / 100).tolist())],
+        "area": [np.array((np.array(area) / 100).tolist())],
+        "kitchen": [np.array((np.array(kitchen) / 100).tolist())],
+        "balcony": [np.array((np.array(balcony) / 100).tolist())],
+        "metro": [np.array((np.array(metro) / 100).tolist())],
+        "condition": [np.array((np.array(condition)).tolist())]
+    }
+    result = calculate_pull_my(Samples, user_id,
                                needed_adjustments)
-
+    
     return Success(json.dumps(result))
 
 

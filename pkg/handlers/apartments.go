@@ -271,11 +271,16 @@ func (h *ApartmentHandler) Reestimate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ApartmentHandler) EstimateAll(w http.ResponseWriter, r *http.Request) {
-	// рассчитываем весь пулл
-	// мб сразу формируем ексель и предлагаем скачать бесплатно без смс и регистрации?
+	userSession, err := h.Sessions.Check(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	fmt.Println("from estimate all")
 	type UserIDAdjastments struct {
 		UserID    uint32        `json:"user_id"`
-		Samples   []uint32      `json:"idxs_expert_flat"`
+		Samples   []uint32      `json:"Samples"`
 		Tender    [1]float64    `json:"tender"`
 		Floor     [3][3]float64 `json:"floor"`
 		Area      [6][6]float64 `json:"area"`
@@ -299,39 +304,16 @@ func (h *ApartmentHandler) EstimateAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	rParams.UserID = userSession.UserID
+
+	fmt.Println("rData", string(rData)) //
+	fmt.Println("rParams", rParams)     //
+
 	response, err := h.JSONrpcClient.Call("calculate_pull", &rParams)
 	if err != nil {
 		fmt.Println(err) //
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	data, ok := response.Result.(string)
-	if !ok {
-		fmt.Println("not string - ", response.Result) //
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// TODO:
-	type ReculculatedPrice struct {
-		PricesM2    []float64 `json:"AllPrices"`
-		TotalPrices []float64 `json:"FinalPrice"`
-	}
-	var prices ReculculatedPrice
-	err = json.Unmarshal([]byte(data), &prices)
-	if err != nil {
-		fmt.Println(err)             //
-		fmt.Println(response.Result) //
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	fmt.Println("Result from get_analogs:\n", prices) //
-
-	wData, ok := response.Result.([]byte)
-	if !ok {
-		fmt.Println("not []byte - ", response.Result) //
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.Write(wData)
+	fmt.Println("response", response) //
 }
