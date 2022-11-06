@@ -4,6 +4,7 @@ import json
 import typing as tp
 import numpy as np
 from ml_solution import get_analogs_flat_idxs, conn, cur
+from ml_solution import update_coords_user_apartments
 from corrections import type_adjustments, data_adjustments
 from corrections import adjustments as adjustments_not_inits
 from corrections import adjustments_all as adjustments_default
@@ -35,6 +36,12 @@ def recalculate_price_expert_flat_my(expert_flat_id: int,
                                  my_adjustments_all,
                                  table_expert, table_analogs)
     return {"Price": price, "TotalPrice": total_price}
+
+@method
+def update_pull(user_id: int) -> Result:
+    update_coords_user_apartments(user_id)
+
+    return Success('done')
 
 
 @method
@@ -129,6 +136,7 @@ if __name__ == "__main__":
     print(get_analogs_tmp(7))
     print(calculate_pull_my([1, 2, 8], [3, 4, 5, 6, 7], {"tender": [-0.06]}))
     print(recalculate_price_expert_flat(1, [2, 3, 4], {"tender": [-0.06]}))
+    print(update_coords_user_apartments(1))
 
 
     try:

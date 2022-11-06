@@ -7,7 +7,7 @@ from corrections import adjustments_all as adjustments_default
 import psycopg2
 import geopy.distance
 import argparse
-
+import typing as tp
 
 columns_to_compare = ["type", "material", "rooms", "height"]
 
@@ -15,6 +15,69 @@ columns_db_apartments = ["id", "user_id", "address", "rooms", "type",
                          "height", "material", "floor", "area",
                          "kitchen", "balcony", "metro", "condition",
                          "latitude", "longitude", "total_price", "price_m2"]
+
+columns_user_apartments = ["id", "user_id", "address", "rooms", "type",
+                           "height", "material", "floor", "area",
+                           "kitchen", "balcony", "metro", "condition",
+                           "latitude", "longitude", "total_price", "price_m2"]
+
+
+def get_coords(address):
+    from geopy.geocoders import Nominatim
+
+    geolocator = Nominatim(user_agent="smy-application")
+    location = geolocator.geocode(address)
+    latitude_x = location.latitude
+    longitude_y = location.longitude
+    return latitude_x, longitude_y
+
+
+def get_coords(address: str) -> tp.Tuple[int, int]:
+    from geopy.geocoders import Nominatim
+
+    geolocator = Nominatim(user_agent="smy-application")
+    location = geolocator.geocode(address)
+    print('location: ', location)
+    if location is None:
+        return 45, 42
+    latitude_x = location.latitude
+    longitude_y = location.longitude
+    return latitude_x, longitude_y
+
+
+def update_coords_user_apartments(user_id: int) -> None:
+    columns = columns_user_apartments
+    sql3 = \
+    f"""
+    SELECT * 
+    FROM user_apartments 
+    WHERE user_id = {user_id} 
+    """
+    cur.execute(sql3)
+    pull = cur.fetchall()
+    print('pull ', pull)
+    pull = pd.DataFrame(np.array(pull).reshape(-1, len(columns)),
+                        columns=columns)
+    update_rows = []
+    for index, row in pull.iterrows():
+        if int(float(row.latitude)) == 0:
+            lat, lon = get_coords(row.address)
+            row.latitude = lat
+            row.longitude = lon
+            update_rows.append(row)
+
+    for row in update_rows:
+        print(f'update {row.id} row! \n')
+        sql4 = \
+            f"""
+        UPDATE user_apartments
+        SET latitude = {row.latitude},
+            longitude = {row.longitude}
+        WHERE id = {row.id}
+        """
+        cur.execute(sql4)
+    conn.commit()
+
 
 type2number = {
     'новостройка': 0,
@@ -29,6 +92,8 @@ material2number = {
 }
 
 pull_flats = PullFlats(adjustments_default)
+
+
 def rooms2number(rooms):
     if rooms == 'студия':
         return 1.5
@@ -48,6 +113,7 @@ def get_args():
 
     return args
 
+
 args = get_args()
 
 conn = psycopg2.connect(host="localhost", port=args.port,
@@ -55,8 +121,10 @@ conn = psycopg2.connect(host="localhost", port=args.port,
                         user=args.user, password=args.password)
 cur = conn.cursor()
 
+
 def calc_distance(coords_1, coords_2):
     return geopy.distance.geodesic(coords_1, coords_2).km
+
 
 def get_flats_from_radius(df, max_dist, expert_flat):
     lst_nearest = []
@@ -66,12 +134,12 @@ def get_flats_from_radius(df, max_dist, expert_flat):
         dist = calc_distance((row["latitude"], row["longitude"]),
                              (expert_flat.latitude, expert_flat.longitude))
         if 0 <= dist < max_dist:
-
             lst_nearest.append(row)
             lst_idxs.append(idx)
             lst_dists.append(dist)
 
     return lst_idxs, lst_dists, lst_nearest
+
 
 def my_dist(first_flat, second_flat):
     """
@@ -84,22 +152,24 @@ def my_dist(first_flat, second_flat):
     -------
 
     """
-    first_flat = pd.DataFrame(first_flat.reshape(1, 5), columns=columns_to_compare + ["dist"])
-    second_flat = pd.DataFrame(second_flat.reshape(1, 5), columns=columns_to_compare + ["dist"])
+    first_flat = pd.DataFrame(first_flat.reshape(1, 5),
+                              columns=columns_to_compare + ["dist"])
+    second_flat = pd.DataFrame(second_flat.reshape(1, 5),
+                               columns=columns_to_compare + ["dist"])
 
-#    total_price, expert_price_sq_meter, percent_corrects, counts_carefully = pull_flats.calculate_weights(first_flat, second_flat)
+    #    total_price, expert_price_sq_meter, percent_corrects, counts_carefully = pull_flats.calculate_weights(first_flat, second_flat)
 
-    return 1000 * np.abs(first_flat.loc[0, "type"] - first_flat.loc[0, "type"]) + \
-            1000 * np.abs(first_flat.loc[0, "rooms"] - second_flat.loc[0, "rooms"]) + \
-            1000 * np.abs(first_flat.loc[0, "material"] - second_flat.loc[0, "material"]) + \
-            1000 * np.abs(first_flat.loc[0, "height"] - second_flat.loc[0, "height"])
-
-
-
+    return 1000 * np.abs(
+        first_flat.loc[0, "type"] - first_flat.loc[0, "type"]) + \
+           1000 * np.abs(
+        first_flat.loc[0, "rooms"] - second_flat.loc[0, "rooms"]) + \
+           1000 * np.abs(
+        first_flat.loc[0, "material"] - second_flat.loc[0, "material"]) + \
+           1000 * np.abs(
+        first_flat.loc[0, "height"] - second_flat.loc[0, "height"])
 
 
 def get_neighbors(id_expert_flat: int):
-
     # Open a cursor to perform database operations
 
     sql3 = f"""
@@ -112,7 +182,9 @@ def get_neighbors(id_expert_flat: int):
     if not fetchall:
         raise ValueError("Don't Id in db")
     tuple_flat = fetchall[0]
-    expert_flat = pd.DataFrame(np.array(tuple_flat).reshape(1, len(columns_db_apartments)), columns=columns_db_apartments)
+    expert_flat = pd.DataFrame(
+        np.array(tuple_flat).reshape(1, len(columns_db_apartments)),
+        columns=columns_db_apartments)
 
     print('expert_flat', expert_flat)
     sql4 = f"""
@@ -127,16 +199,20 @@ def get_neighbors(id_expert_flat: int):
     print('record', record)
 
     df_nearest = pd.DataFrame(record, columns=columns_db_apartments)
-    df_nearest[["latitude", "longitude"]] = df_nearest[["latitude", "longitude"]].astype('float')
-    expert_flat[["latitude", "longitude"]] = expert_flat[["latitude", "longitude"]].astype('float')
+    df_nearest[["latitude", "longitude"]] = df_nearest[
+        ["latitude", "longitude"]].astype('float')
+    expert_flat[["latitude", "longitude"]] = expert_flat[
+        ["latitude", "longitude"]].astype('float')
 
     return df_nearest, expert_flat.iloc[0, :]
+
 
 def get_price(df, idxs):
     df = df.set_index("id")
     price = np.mean(df.loc[idxs, "total_price"].values)
 
     return price
+
 
 def get_analogs_flat_idxs(id_expert_flat: int):
     try:
@@ -156,10 +232,11 @@ def get_analogs_flat_idxs(id_expert_flat: int):
         return idxs, None, None
 
     df2 = pd.DataFrame(lst_nearest)[columns_to_compare]
-#    df2['area'] = df2['area'].apply(lambda x: float(x))
-#    df2["balcony"] = df2["balcony"].apply(lambda x: 1 if x == "Да" else 0)
+    #    df2['area'] = df2['area'].apply(lambda x: float(x))
+    #    df2["balcony"] = df2["balcony"].apply(lambda x: 1 if x == "Да" else 0)
     df2["type"] = df2["type"].apply(lambda x: type2number[x.lower()])
-    df2["material"] = df2["material"].apply(lambda x: material2number[x.lower()])
+    df2["material"] = df2["material"].apply(
+        lambda x: material2number[x.lower()])
     df2["rooms"] = df2["rooms"].apply(lambda x: float(rooms2number(x.lower())))
     df2["height"] = df2["height"].apply(lambda x: float(x))
 
@@ -197,6 +274,3 @@ def get_analogs_flat_idxs(id_expert_flat: int):
     print('idxs', idxs)
 
     return idxs, price / expert_flat.area, price,
-
-
-
