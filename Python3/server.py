@@ -67,6 +67,7 @@ def update_price(id_flat: int, price_m2: float, total_price: float):
 @method
 def get_analogs(id_flat: int) -> Result:
     result = get_analogs_tmp(id_flat)
+    print('write in user_apartments', id_flat, result["PriceM2"], result["TotalPrice"])
     update_price(id_flat, result["PriceM2"], result["TotalPrice"])
 
     return Success(json.dumps(result))
@@ -116,6 +117,8 @@ def recalculate_price_expert_flat(id: int,
                                               needed_adjustments,
                                               'user_apartments',
                                               'db_apartments')
+    if result["Price"] < 0:
+        exit(1)
 
     update_price(expert_flat_id, result["Price"], result["TotalPrice"])
 
