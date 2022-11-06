@@ -249,6 +249,9 @@ class PullFlats:
         counts_carefully = 0
         for i, adjustment in enumerate(self.needed_adjustments):
             print(type_adjustments[i], end=': ')
+            # before this not here be
+#            analog.price_m2 = expert_price_sq_meter
+            analog.at["price_m2"] = expert_price_sq_meter
             percent, carefully = adjustment.calculate(expert, analog)
             counts_carefully += int(carefully)
             percent = float(percent)
@@ -258,6 +261,8 @@ class PullFlats:
             print(' : new_price: ', expert_price_sq_meter)
             percent_corrects += abs(percent)
 
+        # before this not here be
+        analog.at["price_m2"] = analog_price_sq_meter
         total_price = expert_price_sq_meter * float(analog.area)
 
         return total_price, expert_price_sq_meter, percent_corrects, counts_carefully
