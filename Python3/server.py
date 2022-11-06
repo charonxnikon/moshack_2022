@@ -11,6 +11,9 @@ from corrections import adjustments_all as adjustments_default
 from copy import deepcopy
 from ml_solution import columns_user_apartments
 import pandas as pd
+import logging
+logger = logging.getLogger('jsonrpcserver').setLevel(logging.DEBUG)
+print(logger)
 
 
 user2expert_flats = {}
@@ -89,7 +92,23 @@ def get_analogs_tmp(id_flat: int) -> tp.Any:
 @method
 def recalculate_price_expert_flat(expert_flat_id: int,
                                   analog_idxs: tp.List[int],
-                                  needed_adjustments) -> Result:
+                                  tender: tp.List[tp.List[int]],
+                                  floor: tp.List[tp.List[int]],
+                                  area: tp.List[tp.List[int]],
+                                  kitchen: tp.List[tp.List[int]],
+                                  balcony: tp.List[tp.List[int]],
+                                  metro: tp.List[tp.List[int]],
+                                  condition: tp.List[tp.List[int]]) -> Result:
+
+    needed_adjustments = {
+        "tender": tender,
+        "floor": floor,
+        "area": area,
+        "kitchen": kitchen,
+        "balcony": balcony,
+        "metro": metro,
+        "condition": condition
+    }
     result = recalculate_price_expert_flat_my(expert_flat_id, analog_idxs,
                                               needed_adjustments,
                                               'user_apartments',
@@ -197,7 +216,7 @@ if __name__ == "__main__":
     # print('final: ', tmp([1, 2], [3, 4, 5, 6, 7], {"tender": [-0.06]}))
 
     #    idxs, price, total_price = get_analogs_flat_idxs(1)
-#    print(get_analogs_tmp(7))
+    print(get_analogs_tmp(1))
 #    print(calculate_pull_my([1, 2, 8], 1, {"tender": [-0.06]}))
 #    print(recalculate_price_expert_flat(1, [2, 3, 4], {"tender": [-0.06]}))
 #    #print(update_coords_user_apartments(1))
