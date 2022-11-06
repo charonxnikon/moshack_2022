@@ -265,15 +265,9 @@ func (h *ApartmentHandler) Reestimate(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	fmt.Println("Result from get_analogs:\n", prices) //
+	fmt.Println("Result from get_analogs:", prices) //
 
-	wData, ok := response.Result.([]byte)
-	if !ok {
-		fmt.Println("not []byte - ", response.Result) //
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.Write(wData)
+	w.Write([]byte(data))
 }
 
 func (h *ApartmentHandler) EstimateAll(w http.ResponseWriter, r *http.Request) {
