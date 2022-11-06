@@ -5,10 +5,10 @@
             :changeSettings="changeSettings">
         </controllers-view>
 
-        <div v-for="(item, index) in data" :key="mapKey[item.ID]" class="map">
+        <div v-for="(item, index) in data" :key="mapKey[item.ID]" class="map" :class="loadedData[item.ID] !== null ? 'map__expanded' : ''">
             <div class="map__header" @click="expandMap(item.ID)">
-                <span>{{ item.Address }}</span>
-                <button type="button" name="button" @click="recalculate(item.ID)">Перерассчитать</button>
+                <span>{{ item.Address }} | {{ item.TotalPrice }}₽</span>
+                <button v-if="loadedData[item.ID] !== null" type="button" class="map__recalc" name="button" @click="recalculate(item.ID)">Перерассчитать</button>
             </div>
 
             <map-frame

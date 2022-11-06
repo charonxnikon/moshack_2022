@@ -1,12 +1,12 @@
 <template>
-    <div class="map__list" style="width: 50%; height: 400px">
-        <div class="map__list-header">
+    <div class="map__list">
+        <!-- <div class="map__list-header">
             Эталон | {{ data.Address }}
-        </div>
+        </div> -->
 
-        <div v-for="(item, index) in data.Analogs" :key="index" class="map__list-item">
+        <div v-for="(item, index) in data.Analogs" :key="index" class="map__list-item" :class="excludedLines.includes(item.ID) ? 'map__list-item-excluded' : ''">
             <span>{{ item.Address }}</span>
-            <button class="map__button" :class="isExcluded ? 'map__button-remove' : ''" type="button" @click="exclude(item.ID)"></button>
+            <button class="map__button" type="button" @click="exclude(item.ID)"></button>
         </div>
     </div>
 </template>
@@ -23,18 +23,23 @@ export default {
     },
 
     data: () => ({
-        isExcluded: false,
+        excludedLines: [],
     }),
 
-    computed: {
-        checkExcluded() {
-            return this.isExcluded;
-        }
-    },
+    // computed: {
+    //     checkExcluded() {
+    //         return this.isExcluded;
+    //     }
+    // },
 
     methods: {
         exclude(id) {
-            this.isExcluded = !this.isExcluded;
+            const index = this.excludedLines.indexOf(id);
+            if (index > -1) {
+                this.excludedLines.splice(index, 1);
+            } else {
+                this.excludedLines.push(id);
+            }
             this.excludeLine(this.data.ID, id);
         }
     },
