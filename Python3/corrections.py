@@ -10,7 +10,7 @@ import typing as tp
 # kitchen_area was changed
 # metro_dist was changed
 
-columns = ["id", "user_id", "adress", "rooms", "type",
+columns = ["id", "user_id", "address", "rooms", "type",
            "height", "material", "floor", "area",
            "kitchen", "balcony", "metro", "condition",
            "latitude", "longitude", "price", "price_m2"]
@@ -18,7 +18,7 @@ columns = ["id", "user_id", "adress", "rooms", "type",
 condition2code = {
     'Без отделки': 0,
     'Муниципальный ремонт': 1,
-    'Улучшенный': 2
+    'Современная отделка': 2
 }
 
 def get_args():
@@ -70,7 +70,7 @@ class AdjustmentTender:
         self.adjustment = adjustment
 
     def calculate(self, expert, analog):
-        return self.adjustment
+        return self.adjustment, False
 
 
 class AdjustmentFloorFlat:
@@ -93,7 +93,7 @@ class AdjustmentFloorFlat:
         index_expert = self._calculate_index(expert)
         index_analog = self._calculate_index(analog)
 
-        return self.adjustment_matr[index_expert][index_analog]
+        return self.adjustment_matr[index_expert][index_analog], False
 
 
 # FlatArea, KitchenArea, Balcony, MetroDist,
@@ -112,10 +112,14 @@ class AdjustmentGeneral:
         assert False, "Unreachable Code"
 
     def calculate(self, expert, analog):
+        carefully = False
         index_expert = self._calculate_index(expert)
         index_analog = self._calculate_index(analog)
+        if abs(index_expert - index_analog) >= 3:
+            carefully = True
 
-        return self.adjustment_matr[index_expert][index_analog]
+
+        return self.adjustment_matr[index_expert][index_analog], carefully
 
 
 class AdjustmentRepair:
@@ -132,7 +136,7 @@ class AdjustmentRepair:
         index_analog = self._calculate_index(analog)
 
         return self.adjustment_matr[index_expert][index_analog]\
-               / float(analog.price_m2)
+               / float(analog.price_m2), False
 
 
 data_adjustments = {
@@ -242,9 +246,12 @@ class PullFlats:
         analog_price_sq_meter = float(analog.price_m2)
         expert_price_sq_meter = float(analog_price_sq_meter)
         percent_corrects = 0
+        counts_carefully = 0
         for i, adjustment in enumerate(self.needed_adjustments):
             print(type_adjustments[i], end=': ')
-            percent = float(adjustment.calculate(expert, analog))
+            percent, carefully = adjustment.calculate(expert, analog)
+            counts_carefully += int(carefully)
+            percent = float(percent)
             print('percent: ', percent)
             expert_price_sq_meter *= (1 + percent)
             print(' : new_price: ', (1 + percent))
@@ -253,48 +260,52 @@ class PullFlats:
 
         total_price = expert_price_sq_meter * float(analog.area)
 
-        return total_price, expert_price_sq_meter, percent_corrects
+        return total_price, expert_price_sq_meter, percent_corrects, counts_carefully
 
-    def calculate_weights(self, percent_corrects):
+    def calculate_weights(self, expert_flat, pull_analogs):
         """
-        :param percent_corrects:  is numpy array
-        :return:
-        """
-        min_correct = np.min(percent_corrects)
-        if min_correct == 0:
-            min_idx = np.argmin(percent_corrects)
-            weights = np.zeros_like(percent_corrects, dtype=float)
-            number_min_idxs = sum(percent_corrects == 0)
-            weights[percent_corrects == 0] = 1 / number_min_idxs
-            print('weights: ', weights)
-            return weights
-        inv_percent_corrects = min_correct / percent_corrects
-        inv_sum = 1 / np.sum(inv_percent_corrects)
-        return inv_percent_corrects * inv_sum
-
-    def calculate_pull(self, id_expert_flat, pull_analogs):
-        """
-        calculate pull of pandas dataframe
-        :param id_expert_flat: id expert_flat
-        :param pull_analogs:  pd.DataFrame
+        id_expert_flat: int
+        pull_analogs: pd.DataFrame
         :return:
         """
         prices_total_analogs = []
         prices_sq_meter_analogs = []
         percent_corrects = []
-        expert_flat = pull_analogs.iloc[str(id_expert_flat) == pull_analogs.index, :]
-#        expert_flat = pull_analogs.loc[int(id_expert_flat), :]
+        counts_carefully = []
         for index, row in pull_analogs.iterrows():
-            if index != id_expert_flat:
-                analog_flat = pull_analogs.loc[index, :]
-                total_price, price, percent_correct = \
-                    self.calculate_analog_price(expert_flat, analog_flat)
-                prices_total_analogs.append(total_price)
-                prices_sq_meter_analogs.append(price)
-                percent_corrects.append(percent_correct)
+            analog_flat = pull_analogs.loc[index, :]
+            total_price, price, percent_correct, count_carefully = \
+                self.calculate_analog_price(expert_flat, analog_flat)
+            prices_total_analogs.append(total_price)
+            prices_sq_meter_analogs.append(price)
+            percent_corrects.append(percent_correct)
+            counts_carefully.append(count_carefully)
 
-        weights = self.calculate_weights(np.array(percent_corrects))
-        print(weights)
+        min_correct = np.min(percent_corrects)
+        if min_correct == 0:
+            min_idx = np.argmin(percent_corrects)
+            weights = np.zeros_like(percent_corrects, dtype=float)
+            number_min_idxs = sum(np.array(percent_corrects) == 0)
+            weights[np.array(percent_corrects) == 0] = 1 / number_min_idxs
+            print('weights: ', weights)
+            return weights, prices_sq_meter_analogs, \
+                   prices_total_analogs, counts_carefully
+        inv_percent_corrects = min_correct / percent_corrects
+        inv_sum = 1 / np.sum(inv_percent_corrects)
+        return inv_percent_corrects * inv_sum, \
+                prices_sq_meter_analogs, prices_total_analogs, counts_carefully
+
+
+    def calculate_pull(self, expert_flat, pull_analogs):
+        """
+        calculate pull of pandas dataframe
+        :param expert_flat:
+        :param pull_analogs:  pd.DataFrame
+        :return:
+        """
+
+        weights, prices_sq_meter_analogs, prices_total_analogs, _ = \
+            self.calculate_weights(expert_flat, pull_analogs)
         return np.dot(weights, prices_sq_meter_analogs), \
                np.dot(weights, prices_total_analogs)
 
@@ -314,24 +325,25 @@ data_flats = {
 }
 
 
-
 def recalculate_price_expert(expert_idx: int,
                              analogs_idxs: tp.List[int],
-                             adjustments):
+                             adjustments,
+                             table_expert: str,
+                             table_analogs: str):
     """
     :param expert_idx: id_expert  from table of apartments
     :param analogs_idxs: analogs list idxs from table of user_analogs
     :param adjustments:
     :return:
     """
-    expert_flat = get_idxs_from_table('db_apartments', [expert_idx])
-    analogs_flat = get_idxs_from_table('user_apartments', analogs_idxs)
-    all_flats = pd.concat([expert_flat, analogs_flat])
-    pull_flats_df = pd.DataFrame.from_dict(all_flats)
+    expert_flat = get_idxs_from_table(table_expert, [expert_idx])
+    analogs_flat = get_idxs_from_table(table_analogs, analogs_idxs)
+#    all_flats = pd.concat([expert_flat, analogs_flat])
+#    pull_flats_df = pd.DataFrame.from_dict(all_flats)
     pull_flats = PullFlats(needed_adjustments=adjustments)
-    pull_flats_df = pull_flats_df.reset_index().set_index('id')
+#    pull_flats_df = pull_flats_df.reset_index().set_index('id')
 
-    return pull_flats.calculate_pull(1, pull_flats_df)
+    return pull_flats.calculate_pull(expert_flat, analogs_flat)
 
 
 # pull_flats_df = pd.DataFrame.from_dict(data_flats)

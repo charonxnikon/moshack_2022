@@ -47,7 +47,7 @@ def fill_table(table, file):
     DELIMITER ','
     CSV HEADER;
     """
-    print(os.getcwd()+ '/' + file) #
+    print(os.getcwd()+ '/' + file)
     cur.execute(sql2)
 
 def get_idxs_from_table(table, idxs, columns):

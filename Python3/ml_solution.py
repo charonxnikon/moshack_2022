@@ -2,15 +2,38 @@ import pandas as pd
 import numpy as np
 
 from sklearn.neighbors import NearestNeighbors
+from corrections import PullFlats
+from corrections import adjustments_all as adjustments_default
 import psycopg2
 import geopy.distance
 import argparse
 
 
+columns_to_compare = ["type", "material", "rooms", "height"]
+
 columns_db_apartments = ["id", "user_id", "address", "rooms", "type",
                          "height", "material", "floor", "area",
                          "kitchen", "balcony", "metro", "condition",
                          "latitude", "longitude", "total_price", "price_m2"]
+
+type2number = {
+    'новостройка': 0,
+    'современное жилье': 1,
+    'старый жилой фонд': 2
+}
+
+material2number = {
+    'кирпич': 0,
+    'панель': 1,
+    'монолит': 2
+}
+
+pull_flats = PullFlats(adjustments_default)
+def rooms2number(rooms):
+    if rooms == 'студия':
+        return 1.5
+    else:
+        return str(rooms)
 
 
 def get_args():
@@ -19,7 +42,7 @@ def get_args():
     parser.add_argument('-p', '--port', default=5432)
     parser.add_argument('-db', '--dbname', default="moshack")
     parser.add_argument('-u', '--user', default="postgres")
-    parser.add_argument('-pw', '--password', default="3546")
+    parser.add_argument('-pw', '--password', default="777777")
 
     args = parser.parse_args()
 
@@ -50,8 +73,29 @@ def get_flats_from_radius(df, max_dist, expert_flat):
 
     return lst_idxs, lst_dists, lst_nearest
 
-def my_dist(x, y):
-    return abs(x[0] - y[0]) + 15 * abs(x[1] - y[1]) + 25 * abs(x[2] - y[2])
+def my_dist(first_flat, second_flat):
+    """
+
+    Parameters
+    ----------
+    expert_flat with None price
+
+    Returns
+    -------
+
+    """
+    first_flat = pd.DataFrame(first_flat.reshape(1, 5), columns=columns_to_compare + ["dist"])
+    second_flat = pd.DataFrame(second_flat.reshape(1, 5), columns=columns_to_compare + ["dist"])
+
+#    total_price, expert_price_sq_meter, percent_corrects, counts_carefully = pull_flats.calculate_weights(first_flat, second_flat)
+
+    return 1000 * np.abs(first_flat.loc[0, "type"] - first_flat.loc[0, "type"]) + \
+            1000 * np.abs(first_flat.loc[0, "rooms"] - second_flat.loc[0, "rooms"]) + \
+            1000 * np.abs(first_flat.loc[0, "material"] - second_flat.loc[0, "material"]) + \
+            1000 * np.abs(first_flat.loc[0, "height"] - second_flat.loc[0, "height"])
+
+
+
 
 
 def get_neighbors(id_expert_flat: int):
@@ -111,13 +155,25 @@ def get_analogs_flat_idxs(id_expert_flat: int):
         print('not lst nearest')
         return idxs, None, None
 
-    df2 = pd.DataFrame(lst_nearest)[["area", 'balcony']]
-    df2['area'] = df2['area'].apply(lambda x: float(x))
-    df2["balcony"] = df2["balcony"].apply(lambda x: 1 if x == "Да" else 0)
+    df2 = pd.DataFrame(lst_nearest)[columns_to_compare]
+#    df2['area'] = df2['area'].apply(lambda x: float(x))
+#    df2["balcony"] = df2["balcony"].apply(lambda x: 1 if x == "Да" else 0)
+    df2["type"] = df2["type"].apply(lambda x: type2number[x.lower()])
+    df2["material"] = df2["material"].apply(lambda x: material2number[x.lower()])
+    df2["rooms"] = df2["rooms"].apply(lambda x: float(rooms2number(x.lower())))
+    df2["height"] = df2["height"].apply(lambda x: float(x))
+
+    expert_flat["type"] = type2number[expert_flat["type"].lower()]
+    expert_flat["material"] = material2number[expert_flat["material"].lower()]
+    expert_flat["rooms"] = rooms2number(float(expert_flat["rooms"].lower()))
+    expert_flat["height"] = float(expert_flat["height"])
+
     expert_flat.balcony = 1 if expert_flat.balcony == "Да" else 0
     expert_flat.area = float(expert_flat.area)
     df2["dist"] = lst_dists
     vals = df2.values
+    print('vals: ', vals)
+    print('expert_flat: ', expert_flat.values)
     if len(vals) < 5:
         idxs = df.iloc[lst_idxs, 0].values
         price = get_price(df, idxs)
@@ -125,13 +181,14 @@ def get_analogs_flat_idxs(id_expert_flat: int):
         print('len(vals < 5')
         return idxs, price / expert_flat.area, price
 
-    expert_value = np.array(
-        [float(expert_flat.area), float(expert_flat.balcony), 0]
-    ).reshape(1, -1)
+    expert_value = np.array([
+        float(expert_flat.type), float(expert_flat.material),
+        float(expert_flat.rooms), float(expert_flat.height), 0
+    ]).reshape(1, -1)
+    print('expert_value: ', expert_value)
+    print('vals.shape: ', vals.shape)
     nbrs = NearestNeighbors(n_neighbors=5, algorithm='brute', metric=my_dist)
     nbrs.fit(vals)
-    #    print(expert_value)
-    #    print(vals)
     dists, idxs = nbrs.kneighbors(expert_value)
     idxs_lst = idxs.ravel().tolist()
 

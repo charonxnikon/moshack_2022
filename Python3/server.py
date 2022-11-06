@@ -12,7 +12,9 @@ from copy import deepcopy
 
 def recalculate_price_expert_flat_my(expert_flat_id: int,
                                      analog_idxs: tp.List[int],
-                                     needed_adjustments) -> tp.Any:
+                                     needed_adjustments,
+                                     table_expert: str,
+                                     table_analogs: str) -> tp.Any:
     my_data_adjustments = deepcopy(data_adjustments)
     for adjustment in type_adjustments:
         if adjustment in needed_adjustments:
@@ -29,8 +31,9 @@ def recalculate_price_expert_flat_my(expert_flat_id: int,
             )
 
     price, total_price = \
-        recalculate_price_expert(expert_flat_id, analogs_idxs=analog_idxs,
-                                 adjustments=my_adjustments_all)
+        recalculate_price_expert(expert_flat_id, analog_idxs,
+                                 my_adjustments_all,
+                                 table_expert, table_analogs)
     return {"Price": price, "TotalPrice": total_price}
 
 
@@ -45,7 +48,10 @@ def get_analogs_tmp(id_flat: int) -> tp.Any:
     if idxs == []:
         return {"Analogs": [], "PriceM2": -1.0, "TotalPrice": -1.0}
     idxs_new = list(map(int, idxs))
-    res = recalculate_price_expert_flat_my(id_flat, idxs, adjustments_default)
+    print('id_flat: ', id_flat)
+    print('idxs : ', idxs)
+    res = recalculate_price_expert_flat_my(id_flat, idxs, adjustments_default,
+                                           'user_apartments', 'db_apartments')
     price_m2 = res["Price"]
     total_price = res["TotalPrice"]
 
@@ -57,7 +63,9 @@ def recalculate_price_expert_flat(expert_flat_id: int,
                                   analog_idxs: tp.List[int],
                                   needed_adjustments) -> Result:
     result = recalculate_price_expert_flat_my(expert_flat_id, analog_idxs,
-                                              needed_adjustments)
+                                              needed_adjustments,
+                                              'user_apartments',
+                                              'db_apartments')
     return Success(json.dumps(result))
 
 
@@ -68,7 +76,9 @@ def calculate_pull_one_expert(id_expert_flat: int,
     for idx_analog in idx_analogs:
         dct = recalculate_price_expert_flat_my(idx_analog,
                                                [id_expert_flat],
-                                               needed_adjustments)
+                                               needed_adjustments,
+                                               'user_apartments',
+                                               'user_apartments')
         lst_price_total_price.append(list(dct.values()))
 
     return lst_price_total_price
@@ -117,6 +127,8 @@ if __name__ == "__main__":
 
     #    idxs, price, total_price = get_analogs_flat_idxs(1)
     print(get_analogs_tmp(7))
+    print(calculate_pull_my([1, 2, 8], [3, 4, 5, 6, 7], {"tender": [-0.06]}))
+    print(recalculate_price_expert_flat(1, [2, 3, 4], {"tender": [-0.06]}))
 
 
     try:
