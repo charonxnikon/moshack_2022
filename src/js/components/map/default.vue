@@ -8,7 +8,7 @@
         <div v-for="(item, index) in data" :key="mapKey[item.ID]" class="map" :class="loadedData[item.ID] !== null ? 'map__expanded' : ''">
             <div class="map__header" @click="expandMap(item.ID)">
                 <span>{{ item.Address }} | {{ item.TotalPrice }}₽</span>
-                <button v-if="loadedData[item.ID] !== null" type="button" class="map__recalc" name="button" @click="recalculate(item.ID)">Пересчитать</button>
+                <button v-if="loadedData[item.ID] !== null" type="button" class="map__recalc" name="button" @click="recalculate(item.ID, index)">Пересчитать</button>
             </div>
 
             <map-frame
@@ -20,7 +20,8 @@
             </map-frame>
         </div>
 
-        <button class="map__final" type="button" name="button" @click="filnalCalc">Расчет пула</button>
+        <button v-if="toggleFinalButtons" class="map__final" type="button" name="button" @click="filnalCalc">Расчет пула</button>
+        <button v-if="!toggleFinalButtons" class="map__final" type="button" name="button" @click="downloadFile">Скачать архив</button>
     </div>
 </template>
 
@@ -46,6 +47,7 @@ export default {
         loadedData: {},
         mapKey: {},
         excludedAnalogs: {},
+        toggleFinalButtons: true,
         settingsValues: {
             tender: [-4.5],
             floor: [
@@ -112,7 +114,7 @@ export default {
             }
         },
 
-        recalculate(id) {
+        recalculate(id, index) {
             var analogues = this.loadedData[id].Analogs.filter((item) => {
                 const index = this.excludedAnalogs[id].indexOf(item.ID);
                 return index == -1;
@@ -133,6 +135,14 @@ export default {
                 }
             })
             .then(response => {
+                if (response.status == 200) {
+                    if (response.data.TotalPrice) {
+                        this.data[index].TotalPrice = response.data.TotalPrice;
+                    }
+                    if (response.data.Price) {
+                        this.data[index].PriceM2 = response.data.Price;
+                    }
+                }
                 console.log(response)
             })
             .catch(error => {
@@ -157,10 +167,31 @@ export default {
                 }
             })
             .then(response => {
-                console.log(response)
+                if (response.status == 200) {
+                    this.toggleFinalButtons = false;
+                }
             })
             .catch(error => {
                 console.log(error.response)
+            });
+        },
+
+        downloadFile() {
+            axios({
+                url: '/downloadxls',
+                method: 'GET',
+                responseType: 'blob',
+            }).then((response) => {
+                const href = URL.createObjectURL(response.data);
+
+                const link = document.createElement('a');
+                link.href = href;
+                link.setAttribute('download', 'file.xlsx');
+                document.body.appendChild(link);
+                link.click();
+
+                document.body.removeChild(link);
+                URL.revokeObjectURL(href);
             });
         },
 
