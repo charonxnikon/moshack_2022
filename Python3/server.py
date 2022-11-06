@@ -104,13 +104,13 @@ def recalculate_price_expert_flat(id: int,
     analog_idxs = analogs
 
     needed_adjustments = {
-        "tender": (np.array(tender) / 100).tolist(),
-        "floor": (np.array(floor) / 100).tolist(),
-        "area": (np.array(area) / 100).tolist(),
-        "kitchen": (np.array(kitchen) / 100).tolist(),
-        "balcony": (np.array(balcony) / 100).tolist(),
-        "metro": (np.array(metro) / 100).tolist(),
-        "condition": (np.array(condition) / 100).tolist()
+        "tender": [(np.array(tender) / 100).tolist()],
+        "floor": [(np.array(floor) / 100).tolist()],
+        "area": [(np.array(area) / 100).tolist()],
+        "kitchen": [(np.array(kitchen) / 100).tolist()],
+        "balcony": [(np.array(balcony) / 100).tolist()],
+        "metro": [(np.array(metro) / 100).tolist()],
+        "condition": [condition]
     }
     result = recalculate_price_expert_flat_my(expert_flat_id, analog_idxs,
                                               needed_adjustments,

@@ -93,6 +93,7 @@ class AdjustmentFloorFlat:
     def calculate(self, expert, analog):
         index_expert = self._calculate_index(expert)
         index_analog = self._calculate_index(analog)
+        print('floor', self.adjustment_matr)
 
         return self.adjustment_matr[index_expert][index_analog], False
 
