@@ -9,7 +9,11 @@ from corrections import type_adjustments, data_adjustments
 from corrections import adjustments as adjustments_not_inits
 from corrections import adjustments_all as adjustments_default
 from copy import deepcopy
+from ml_solution import columns_user_apartments
+import pandas as pd
 
+
+user2expert_flats = {}
 
 def recalculate_price_expert_flat_my(expert_flat_id: int,
                                      analog_idxs: tp.List[int],
@@ -43,10 +47,22 @@ def update_pull(user_id: int) -> Result:
 
     return Success('done')
 
+def update_price(id_flat: int, price_m2: float, total_price: float):
+    sql_update = \
+    f"""
+    UPDATE user_apartments
+    SET price_m2 = {price_m2},
+        total_price = {total_price}
+    WHERE id = {id_flat}
+    """
+    cur.execute(sql_update)
+    conn.commit()
 
 @method
 def get_analogs(id_flat: int) -> Result:
     result = get_analogs_tmp(id_flat)
+    update_price(id_flat, result["PriceM2"], result["TotalPrice"])
+
     return Success(json.dumps(result))
     
 
@@ -73,6 +89,9 @@ def recalculate_price_expert_flat(expert_flat_id: int,
                                               needed_adjustments,
                                               'user_apartments',
                                               'db_apartments')
+
+    update_price(expert_flat_id, result["Price"], result["TotalPrice"])
+
     return Success(json.dumps(result))
 
 
@@ -90,11 +109,45 @@ def calculate_pull_one_expert(id_expert_flat: int,
 
     return lst_price_total_price
 
+def get_idxs_pull(user_id: int, table: str) -> tp.List[int]:
+    columns = columns_user_apartments
+    sql_get_idxs = f"""
+    SELECT *
+    FROM {table}
+    WHERE id = {user_id}
+    """
+    cur.execute(sql_get_idxs)
+    pull = cur.fetchall()
+    pull = pd.DataFrame(np.array(pull).reshape(-1, len(columns)),
+                        columns=columns)
+    return pull.id.values.tolist()
+
+def update_prices(idx_analogs: tp.List[int], final_prices: tp.List[tp.List[int]],
+                  table_name: str) -> None:
+    for idx, idx_analog in enumerate(idx_analogs):
+        sql_update = \
+        f"""
+        UPDATE {table_name}
+        
+        SET price_m2 = {final_prices[idx][0]},
+            total_price = {final_prices[idx][1]}
+        WHERE id = {idx_analog};
+        """
+        cur.execute(sql_update)
+
+    conn.commit()
+
+
 
 def calculate_pull_my(idxs_expert_flat: tp.List[int],
-                      idx_analogs: tp.List[int],
+                      user_id: int,
                       needed_adjustments):
     lst_all = []
+    all_analogs = get_idxs_pull(user_id, 'user_apartments')
+    print('all_analogs: ', all_analogs)
+    print('idx_analogs: ', all_analogs)
+    idx_analogs = list(set(all_analogs) - set(idxs_expert_flat))
+
     for idx_expert_flat in idxs_expert_flat:
         result = calculate_pull_one_expert(idx_expert_flat, idx_analogs,
                                            needed_adjustments)
@@ -102,16 +155,16 @@ def calculate_pull_my(idxs_expert_flat: tp.List[int],
 
     all_data = np.array(lst_all)
     final_result = np.mean(all_data, axis=0)
+    update_prices(idx_analogs, final_result.tolist(), 'user_apartments')
 
-    return json.dumps({"AllPrices": all_data.tolist(),
-                       "FinalPrice": final_result.tolist()})
+    return 1
 
 
 @method
 def calculate_pull(idxs_expert_flat: tp.List[int],
-                   idx_analogs: tp.List[int],
+                   user_id: int,
                    needed_adjustments):
-    result = calculate_pull_my(idxs_expert_flat, idx_analogs,
+    result = calculate_pull_my(idxs_expert_flat, user_id,
                                needed_adjustments)
 
     return Success(json.dumps(result))
@@ -134,9 +187,9 @@ if __name__ == "__main__":
 
     #    idxs, price, total_price = get_analogs_flat_idxs(1)
     print(get_analogs_tmp(7))
-    print(calculate_pull_my([1, 2, 8], [3, 4, 5, 6, 7], {"tender": [-0.06]}))
+    print(calculate_pull_my([1, 2, 8], 1, {"tender": [-0.06]}))
     print(recalculate_price_expert_flat(1, [2, 3, 4], {"tender": [-0.06]}))
-    print(update_coords_user_apartments(1))
+    #print(update_coords_user_apartments(1))
 
 
     try:

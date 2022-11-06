@@ -22,24 +22,6 @@ type ApartmentHandler struct {
 	JSONrpcClient jsonrpc.RPCClient
 }
 
-type AnalogsAdjastments struct {
-	Id        uint32        `json:"id"`
-	Analogs   []uint32      `json:"analogs"`
-	Tender    [1]float64    `json:"tender"`
-	Floor     [3][3]float64 `json:"floor"`
-	Area      [6][6]float64 `json:"area"`
-	Kitchen   [3][3]float64 `json:"kitchen"`
-	Balcony   [2][2]float64 `json:"balcony"`
-	Metro     [6][6]float64 `json:"metro"`
-	Condition [3][3]float64 `json:"condition"`
-}
-
-type AnalogsPrices struct {
-	Analogs    []uint32 `json:"Analogs"`
-	PriceM2    float64  `json:"PriceM2"`
-	TotalPrice float64  `json:"TotalPrice"`
-}
-
 func (h *ApartmentHandler) Load(w http.ResponseWriter, r *http.Request) {
 	err := h.Tmpl.ExecuteTemplate(w, "loadxls.html", nil)
 	if err != nil {
@@ -108,6 +90,8 @@ func (h *ApartmentHandler) ParseFile(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	go h.JSONrpcClient.Call("update_pull", &userSession.UserID)
+
 	//w.Write(apartments.MarshalApartments(aparts))
 	data, err := json.Marshal(&aparts)
 	if err != nil {
@@ -158,6 +142,11 @@ func (h *ApartmentHandler) Estimate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	type AnalogsPrices struct {
+		Analogs    []uint32 `json:"Analogs"`
+		PriceM2    float64  `json:"PriceM2"`
+		TotalPrice float64  `json:"TotalPrice"`
+	}
 	var analogs AnalogsPrices
 	analogs.Analogs = make([]uint32, 0)
 	response, err := h.JSONrpcClient.Call("get_analogs", &apartmentID.Id)
@@ -211,6 +200,17 @@ func (h *ApartmentHandler) Estimate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ApartmentHandler) Reestimate(w http.ResponseWriter, r *http.Request) {
+	type AnalogsAdjastments struct {
+		Id        uint32        `json:"id"`
+		Analogs   []uint32      `json:"analogs"`
+		Tender    [1]float64    `json:"tender"`
+		Floor     [3][3]float64 `json:"floor"`
+		Area      [6][6]float64 `json:"area"`
+		Kitchen   [3][3]float64 `json:"kitchen"`
+		Balcony   [2][2]float64 `json:"balcony"`
+		Metro     [6][6]float64 `json:"metro"`
+		Condition [3][3]float64 `json:"condition"`
+	}
 	var rParams AnalogsAdjastments
 	rData, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -264,7 +264,19 @@ func (h *ApartmentHandler) Reestimate(w http.ResponseWriter, r *http.Request) {
 func (h *ApartmentHandler) EstimateAll(w http.ResponseWriter, r *http.Request) {
 	// рассчитываем весь пулл
 	// мб сразу формируем ексель и предлагаем скачать бесплатно без смс и регистрации?
-	var rParams AnalogsAdjastments
+	type UserIDAdjastments struct {
+		UserID    uint32        `json:"user_id"`
+		Samples   []uint32      `json:"idxs_expert_flat"`
+		Tender    [1]float64    `json:"tender"`
+		Floor     [3][3]float64 `json:"floor"`
+		Area      [6][6]float64 `json:"area"`
+		Kitchen   [3][3]float64 `json:"kitchen"`
+		Balcony   [2][2]float64 `json:"balcony"`
+		Metro     [6][6]float64 `json:"metro"`
+		Condition [3][3]float64 `json:"condition"`
+	}
+
+	var rParams UserIDAdjastments
 	rData, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
