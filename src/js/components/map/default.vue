@@ -8,7 +8,7 @@
         <div v-for="(item, index) in data" :key="mapKey[item.ID]" class="map" :class="loadedData[item.ID] !== null ? 'map__expanded' : ''">
             <div class="map__header" @click="expandMap(item.ID)">
                 <span>{{ item.Address }} | {{ item.TotalPrice }}₽</span>
-                <button v-if="loadedData[item.ID] !== null" type="button" class="map__recalc" name="button" @click="recalculate(item.ID)">Перерассчитать</button>
+                <button v-if="loadedData[item.ID] !== null" type="button" class="map__recalc" name="button" @click="recalculate(item.ID)">Пересчитать</button>
             </div>
 
             <map-frame
@@ -19,6 +19,8 @@
                 :excludeAnalog="excludeAnalog">
             </map-frame>
         </div>
+
+        <button class="map__final" type="button" name="button" @click="filnalCalc">Расчет пула</button>
     </div>
 </template>
 
@@ -126,6 +128,30 @@ export default {
 
             const json = JSON.stringify(requestData);
             axios.post('/reestimation', json, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                console.log(response)
+            })
+            .catch(error => {
+                console.log(error.response)
+            });
+        },
+
+        filnalCalc() {
+            var IDs = this.data.map((item) => {
+                return item.ID;
+            });
+
+            var requestData = {
+                Samples: IDs,
+                ...this.settingsValues,
+            }
+
+            const json = JSON.stringify(requestData);
+            axios.post('/finalestimation', json, {
                 headers: {
                     'Content-Type': 'application/json'
                 }
