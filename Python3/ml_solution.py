@@ -246,7 +246,7 @@ def get_analogs_flat_idxs(id_expert_flat: int):
     df2["rooms"] = df2["rooms"].apply(lambda x: float(rooms2number(x.lower())))
     df2["height"] = df2["height"].apply(lambda x: float(x))
 
-    expert_flat["type"] = condition2number[expert_flat["type"].lower()]
+    expert_flat["type"] = type2number[expert_flat["type"].lower()]
     expert_flat["material"] = material2number[expert_flat["material"].lower()]
     expert_flat["rooms"] = float(rooms2number(expert_flat["rooms"].lower()))
     expert_flat["height"] = float(expert_flat["height"])
