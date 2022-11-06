@@ -75,6 +75,19 @@
         cursor: pointer;
     }
 
+    &__final {
+        margin-top: 10px;
+        padding: 10px;
+        background: transparent;
+        border: 2px solid #1b002f;
+        border-radius: 5px;
+        color: #1b002f;
+        text-transform: uppercase;
+        font-weight: 700;
+        text-align: center;
+        cursor: pointer;
+    }
+
     &__button {
         position: relative;
         padding: 0;

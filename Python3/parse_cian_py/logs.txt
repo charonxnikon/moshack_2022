@@ -1,0 +1,21 @@
+'NoneType' object has no attribute 'text' cian get_title
+'NoneType' object has no attribute 'text' cian get_price
+'NoneType' object has no attribute 'text' cian get_title
+'NoneType' object has no attribute 'text' cian get_price
+Message: 'chromedriver' executable needs to be in PATH. Please see https://chromedriver.chromium.org/home
+ cian get_photos
+Message: 'chromedriver' executable needs to be in PATH. Please see https://chromedriver.chromium.org/home
+ cian get_photos
+list index out of range cian get_apartment_params
+list index out of range cian get_cottage_params
+list index out of range cian get_commercial_params
+'NoneType' object has no attribute 'find' cian get_date
+'NoneType' object has no attribute 'text' cian get_title
+'NoneType' object has no attribute 'find' cian get_date
+'NoneType' object has no attribute 'text' cian get_title
+'NoneType' object has no attribute 'find' cian get_date
+'NoneType' object has no attribute 'text' cian get_title
+'NoneType' object has no attribute 'find' cian get_date
+'NoneType' object has no attribute 'text' cian get_title
+'NoneType' object has no attribute 'find' cian get_date
+'NoneType' object has no attribute 'text' cian get_title

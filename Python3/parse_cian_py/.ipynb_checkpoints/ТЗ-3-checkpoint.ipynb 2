@@ -1,0 +1,911 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "third-charm",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import pandas as pd\n",
+    "import requests\n",
+    "import numpy as np\n",
+    "from bs4 import BeautifulSoup\n",
+    "import html\n",
+    "from tqdm import tqdm\n",
+    "import os\n",
+    "import gspread\n",
+    "import df2gspread as d2g\n",
+    "import time"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "bulgarian-symphony",
+   "metadata": {},
+   "source": [
+    "#### Импорт парсинг html кода страницы \n",
+    "+ Необходим логин и пароль от МаксимаТелеком\n",
+    "+ Необходим vpn или локальное подключение к сети компании "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "id": "stretch-foster",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "login = 'ma.nikonov'\n",
+    "password = '71pxqSuBtL'"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "secure-lancaster",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "url = 'https://corp.maximatelecom.ru/maxima/task_network/'\n",
+    "s = requests.Session()\n",
+    "r = s.get(url, auth=(login, password))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "id": "logical-loading",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "soup = BeautifulSoup(r.text, 'lxml')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "id": "level-bedroom",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "navpages =(soup.find_all(\"div\", {\"class\": \"navigation-pages\"}))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "id": "jewish-blank",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "last_div = None\n",
+    "for last_div in navpages:pass\n",
+    "if last_div:\n",
+    "    content = last_div"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "id": "juvenile-ceiling",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "last_content = None\n",
+    "i = 0\n",
+    "last_arr = []\n",
+    "for last_content in content:\n",
+    "    i = i + 1\n",
+    "    last_arr.append(last_content) \n",
+    "    pass\n",
+    "content_final = last_arr[i-2]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "id": "altered-simon",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "count_pages = int(content_final.get_text())"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "id": "accompanied-electric",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "url_list = []\n",
+    "for i in range(1,count_pages+1):\n",
+    "    url_list.append('https://corp.maximatelecom.ru/maxima/task_network/?PAGEN_2='+str(i))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "super-bosnia",
+   "metadata": {},
+   "source": [
+    "#### **всегда запускать до этой строки**"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "experienced-victim",
+   "metadata": {},
+   "source": [
+    "_____________"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "fundamental-newark",
+   "metadata": {},
+   "source": [
+    "#### Проверка актуального количества страниц на сайте"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "id": "automated-canon",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "531"
+      ]
+     },
+     "execution_count": 10,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "count_pages"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "cardiac-factory",
+   "metadata": {},
+   "source": [
+    "________________"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "excessive-knitting",
+   "metadata": {},
+   "source": [
+    "#### Если нет начального файла, качаем все"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 153,
+   "id": "similar-pantyhose",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "100%|██████████| 530/530 [36:13<00:00,  4.10s/it]  \n"
+     ]
+    }
+   ],
+   "source": [
+    "data = pd.DataFrame(columns=['№','Город','Название','Категория','Статус','Влияние','Тип работ','Дата начала','Дата окончания','Комментарий'])\n",
+    "for i in tqdm((range(0,count_pages))):\n",
+    "    if i % 100 == 0 and i != 0: \n",
+    "        time.sleep(120)\n",
+    "    s = requests.Session()\n",
+    "    r = s.get(url_list[i], auth=(login, password))\n",
+    "    tables = pd.read_html((html.unescape(r.text)))\n",
+    "    tmp = np.array(tables)\n",
+    "    df = pd.DataFrame(tmp[0,:,:],columns=['№','Город','Название','Категория','Статус','Влияние','Тип работ','Дата начала','Дата окончания','Комментарий'])\n",
+    "    data = pd.concat([data,df], ignore_index=True)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 154,
+   "id": "billion-range",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>№</th>\n",
+       "      <th>Город</th>\n",
+       "      <th>Название</th>\n",
+       "      <th>Категория</th>\n",
+       "      <th>Статус</th>\n",
+       "      <th>Влияние</th>\n",
+       "      <th>Тип работ</th>\n",
+       "      <th>Дата начала</th>\n",
+       "      <th>Дата окончания</th>\n",
+       "      <th>Комментарий</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>237805</td>\n",
+       "      <td>Москва</td>\n",
+       "      <td>Бродкаст push-рассылка</td>\n",
+       "      <td>3</td>\n",
+       "      <td>Утверждена</td>\n",
+       "      <td>Мобильные сервисы (Mobile-Cabinet)</td>\n",
+       "      <td>Плановые</td>\n",
+       "      <td>31.03.2022 18:30:00</td>\n",
+       "      <td>31.03.2022 19:00:00</td>\n",
+       "      <td>NaN</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>237796</td>\n",
+       "      <td>Москва</td>\n",
+       "      <td>Создание сегмента bus_aeroexpress</td>\n",
+       "      <td>3</td>\n",
+       "      <td>Выполнена</td>\n",
+       "      <td>DNS, DHCP, Radius, Proxy, SMS</td>\n",
+       "      <td>Плановые</td>\n",
+       "      <td>31.03.2022 15:30:00</td>\n",
+       "      <td>31.03.2022 16:00:00</td>\n",
+       "      <td>NaN</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>237771</td>\n",
+       "      <td>Москва</td>\n",
+       "      <td>Настройка резервного линка между роутерами cr1...</td>\n",
+       "      <td>3</td>\n",
+       "      <td>Выполнена</td>\n",
+       "      <td>Ядро (ASR, ASA)</td>\n",
+       "      <td>Плановые</td>\n",
+       "      <td>31.03.2022 11:30:00</td>\n",
+       "      <td>31.03.2022 16:32:00</td>\n",
+       "      <td>Работы начаты</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>237766</td>\n",
+       "      <td>Москва</td>\n",
+       "      <td>Изменение конфигурации mt-dhcpd</td>\n",
+       "      <td>3</td>\n",
+       "      <td>Выполнена</td>\n",
+       "      <td>DNS, DHCP, Radius, Proxy, SMS</td>\n",
+       "      <td>Плановые</td>\n",
+       "      <td>31.03.2022 13:00:00</td>\n",
+       "      <td>31.03.2022 14:00:00</td>\n",
+       "      <td>NaN</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>237720</td>\n",
+       "      <td>Москва</td>\n",
+       "      <td>Бродкаст push-рассылка</td>\n",
+       "      <td>3</td>\n",
+       "      <td>Выполнена</td>\n",
+       "      <td>Мобильные сервисы (Mobile-Cabinet)</td>\n",
+       "      <td>Плановые</td>\n",
+       "      <td>30.03.2022 18:30:00</td>\n",
+       "      <td>30.03.2022 19:00:00</td>\n",
+       "      <td>NaN</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>...</th>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>10580</th>\n",
+       "      <td>3887</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>Регламентные работы и маркировка патчкордов на...</td>\n",
+       "      <td>2</td>\n",
+       "      <td>Выполнена</td>\n",
+       "      <td>Сеть доступа</td>\n",
+       "      <td>Плановые</td>\n",
+       "      <td>11.12.2015 12:00:00</td>\n",
+       "      <td>11.12.2015 16:00:00</td>\n",
+       "      <td>Работы проведены</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>10581</th>\n",
+       "      <td>3852</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>Перезагрузка ASR-MRSH для обновления ПО (во вн...</td>\n",
+       "      <td>3</td>\n",
+       "      <td>Выполнена</td>\n",
+       "      <td>Магистральная сеть</td>\n",
+       "      <td>Плановые</td>\n",
+       "      <td>10.12.2015 04:00:00</td>\n",
+       "      <td>10.12.2015 04:15:00</td>\n",
+       "      <td>NaN</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>10582</th>\n",
+       "      <td>3849</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>Добавление А-записей на внешнем и внутреннем DNS</td>\n",
+       "      <td>3</td>\n",
+       "      <td>Выполнена</td>\n",
+       "      <td>Портал</td>\n",
+       "      <td>Плановые</td>\n",
+       "      <td>09.12.2015 15:35:00</td>\n",
+       "      <td>09.12.2015 15:36:00</td>\n",
+       "      <td>Работы проведены</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>10583</th>\n",
+       "      <td>3845</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>Аварийная коррекция настроек портала в новой с...</td>\n",
+       "      <td>1</td>\n",
+       "      <td>Выполнена</td>\n",
+       "      <td>Портал</td>\n",
+       "      <td>Аварийные</td>\n",
+       "      <td>09.12.2015 08:00:00</td>\n",
+       "      <td>09.12.2015 09:00:00</td>\n",
+       "      <td>NaN</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>10584</th>\n",
+       "      <td>3807</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>Добавление А-записи на внешнем DNS</td>\n",
+       "      <td>2</td>\n",
+       "      <td>Выполнена</td>\n",
+       "      <td>Прочее</td>\n",
+       "      <td>Плановые</td>\n",
+       "      <td>01.12.2015 12:51:00</td>\n",
+       "      <td>01.12.2015 12:55:00</td>\n",
+       "      <td>Комментарий</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "<p>10585 rows × 10 columns</p>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "            №   Город                                           Название  \\\n",
+       "0      237805  Москва                             Бродкаст push-рассылка   \n",
+       "1      237796  Москва                  Создание сегмента bus_aeroexpress   \n",
+       "2      237771  Москва  Настройка резервного линка между роутерами cr1...   \n",
+       "3      237766  Москва                    Изменение конфигурации mt-dhcpd   \n",
+       "4      237720  Москва                             Бродкаст push-рассылка   \n",
+       "...       ...     ...                                                ...   \n",
+       "10580    3887     NaN  Регламентные работы и маркировка патчкордов на...   \n",
+       "10581    3852     NaN  Перезагрузка ASR-MRSH для обновления ПО (во вн...   \n",
+       "10582    3849     NaN   Добавление А-записей на внешнем и внутреннем DNS   \n",
+       "10583    3845     NaN  Аварийная коррекция настроек портала в новой с...   \n",
+       "10584    3807     NaN                 Добавление А-записи на внешнем DNS   \n",
+       "\n",
+       "      Категория      Статус                             Влияние  Тип работ  \\\n",
+       "0             3  Утверждена  Мобильные сервисы (Mobile-Cabinet)   Плановые   \n",
+       "1             3   Выполнена       DNS, DHCP, Radius, Proxy, SMS   Плановые   \n",
+       "2             3   Выполнена                     Ядро (ASR, ASA)   Плановые   \n",
+       "3             3   Выполнена       DNS, DHCP, Radius, Proxy, SMS   Плановые   \n",
+       "4             3   Выполнена  Мобильные сервисы (Mobile-Cabinet)   Плановые   \n",
+       "...         ...         ...                                 ...        ...   \n",
+       "10580         2   Выполнена                        Сеть доступа   Плановые   \n",
+       "10581         3   Выполнена                  Магистральная сеть   Плановые   \n",
+       "10582         3   Выполнена                              Портал   Плановые   \n",
+       "10583         1   Выполнена                              Портал  Аварийные   \n",
+       "10584         2   Выполнена                              Прочее   Плановые   \n",
+       "\n",
+       "               Дата начала       Дата окончания       Комментарий  \n",
+       "0      31.03.2022 18:30:00  31.03.2022 19:00:00               NaN  \n",
+       "1      31.03.2022 15:30:00  31.03.2022 16:00:00               NaN  \n",
+       "2      31.03.2022 11:30:00  31.03.2022 16:32:00     Работы начаты  \n",
+       "3      31.03.2022 13:00:00  31.03.2022 14:00:00               NaN  \n",
+       "4      30.03.2022 18:30:00  30.03.2022 19:00:00               NaN  \n",
+       "...                    ...                  ...               ...  \n",
+       "10580  11.12.2015 12:00:00  11.12.2015 16:00:00  Работы проведены  \n",
+       "10581  10.12.2015 04:00:00  10.12.2015 04:15:00               NaN  \n",
+       "10582  09.12.2015 15:35:00  09.12.2015 15:36:00  Работы проведены  \n",
+       "10583  09.12.2015 08:00:00  09.12.2015 09:00:00               NaN  \n",
+       "10584  01.12.2015 12:51:00  01.12.2015 12:55:00       Комментарий  \n",
+       "\n",
+       "[10585 rows x 10 columns]"
+      ]
+     },
+     "execution_count": 154,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "data"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 155,
+   "id": "prepared-modeling",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Данные сохранены в файл export_dataframe.xlsx\n",
+      "На листе export\n",
+      "В директории /Users/Nikon/Desktop/МаксимаТелеком/Максима-ТЗ-3\n"
+     ]
+    }
+   ],
+   "source": [
+    "data.to_excel ('export_dataframe.xlsx', index = False, header=True, sheet_name= 'export')\n",
+    "print('Данные сохранены в файл export_dataframe.xlsx')\n",
+    "print('На листе export')\n",
+    "print('В директории',os.getcwd())"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "legal-being",
+   "metadata": {},
+   "source": [
+    "______________"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "extreme-korea",
+   "metadata": {},
+   "source": [
+    "#### Обновление файла export_dataframe.xlsx"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "id": "silent-orbit",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "url = 'https://corp.maximatelecom.ru/maxima/task_network/'\n",
+    "s = requests.Session()\n",
+    "r = s.get(url, auth=(login, password))\n",
+    "soup = BeautifulSoup(r.text, 'lxml')\n",
+    "navpages =(soup.find_all(\"div\", {\"class\": \"navigation-pages\"}))\n",
+    "last_div = None\n",
+    "for last_div in navpages:pass\n",
+    "if last_div:\n",
+    "    content = last_div\n",
+    "last_content = None\n",
+    "i = 0\n",
+    "last_arr = []\n",
+    "for last_content in content:\n",
+    "    i = i + 1\n",
+    "    last_arr.append(last_content) \n",
+    "    pass\n",
+    "content_final = last_arr[i-2]\n",
+    "count_pages = int(content_final.get_text())\n",
+    "url_list = []\n",
+    "for i in range(1,count_pages+1):\n",
+    "    url_list.append('https://corp.maximatelecom.ru/maxima/task_network/?PAGEN_2='+str(i))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "id": "respective-pathology",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "df_excel = pd.read_excel('export_dataframe.xlsx', sheet_name= 'export')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "id": "vietnamese-belize",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "100%|██████████| 2/2 [00:05<00:00,  2.77s/it]\n"
+     ]
+    }
+   ],
+   "source": [
+    "data_tmp = pd.DataFrame(columns=['№','Город','Название','Категория','Статус','Влияние','Тип работ','Дата начала','Дата окончания','Комментарий'])\n",
+    "for i in tqdm((range(0,count_pages-(len(df_excel)) // 20))):\n",
+    "    if i % 100 == 0 and i != 0: \n",
+    "        time.sleep(120)\n",
+    "    s = requests.Session()\n",
+    "    r = s.get(url_list[i], auth=(login, password))\n",
+    "    tables = pd.read_html((html.unescape(r.text)))\n",
+    "    tmp = np.array(tables)\n",
+    "    df = pd.DataFrame(tmp[0,:,:],columns=['№','Город','Название','Категория','Статус','Влияние','Тип работ','Дата начала','Дата окончания','Комментарий'])\n",
+    "    data_tmp = pd.concat([data_tmp,df], ignore_index=True)\n",
+    "data_tmp = pd.concat([data_tmp,df_excel], ignore_index=True)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "id": "hired-shape",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "del_dupl = data_tmp[~((data_tmp.duplicated(['№','Город','Название','Категория','Статус','Влияние','Тип работ','Дата начала','Дата окончания','Комментарий'])))]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "id": "sunrise-survival",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>№</th>\n",
+       "      <th>Город</th>\n",
+       "      <th>Название</th>\n",
+       "      <th>Категория</th>\n",
+       "      <th>Статус</th>\n",
+       "      <th>Влияние</th>\n",
+       "      <th>Тип работ</th>\n",
+       "      <th>Дата начала</th>\n",
+       "      <th>Дата окончания</th>\n",
+       "      <th>Комментарий</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>238145</td>\n",
+       "      <td>Москва</td>\n",
+       "      <td>Модификация bgp ipv4 интернет пиринга с Mегафо...</td>\n",
+       "      <td>3</td>\n",
+       "      <td>Выполнена</td>\n",
+       "      <td>Ядро (ASR, ASA)</td>\n",
+       "      <td>Плановые</td>\n",
+       "      <td>06.04.2022 12:15:00</td>\n",
+       "      <td>06.04.2022 13:15:00</td>\n",
+       "      <td>Работы завершены успешно</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>238061</td>\n",
+       "      <td>Москва</td>\n",
+       "      <td>Бродкаст push-рассылка</td>\n",
+       "      <td>3</td>\n",
+       "      <td>Выполнена</td>\n",
+       "      <td>Мобильные сервисы (Mobile-Cabinet)</td>\n",
+       "      <td>Плановые</td>\n",
+       "      <td>05.04.2022 18:30:00</td>\n",
+       "      <td>05.04.2022 19:00:00</td>\n",
+       "      <td>NaN</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>238047</td>\n",
+       "      <td>Москва</td>\n",
+       "      <td>Перевод private-apn ebgp стыков сегмента РЖД в...</td>\n",
+       "      <td>2</td>\n",
+       "      <td>Утверждена</td>\n",
+       "      <td>Ядро (ASR, ASA)</td>\n",
+       "      <td>Плановые</td>\n",
+       "      <td>06.04.2022 22:00:00</td>\n",
+       "      <td>07.04.2022 00:01:00</td>\n",
+       "      <td>NaN</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>238041</td>\n",
+       "      <td>Москва</td>\n",
+       "      <td>Изменение параметра netauthURL для сегментов Ц...</td>\n",
+       "      <td>2</td>\n",
+       "      <td>Утверждена</td>\n",
+       "      <td>DNS, DHCP, Radius, Proxy, SMS</td>\n",
+       "      <td>Плановые</td>\n",
+       "      <td>06.04.2022 14:00:00</td>\n",
+       "      <td>06.04.2022 15:00:00</td>\n",
+       "      <td>NaN</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>238027</td>\n",
+       "      <td>Москва</td>\n",
+       "      <td>Отключение Call ID для сегмента bus_ttm (207)</td>\n",
+       "      <td>2</td>\n",
+       "      <td>Выполнена</td>\n",
+       "      <td>Портал (Static, Tomсat, Redis, Unicorn)</td>\n",
+       "      <td>Плановые</td>\n",
+       "      <td>06.04.2022 12:00:00</td>\n",
+       "      <td>06.04.2022 12:00:00</td>\n",
+       "      <td>NaN</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>...</th>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>10619</th>\n",
+       "      <td>3887</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>Регламентные работы и маркировка патчкордов на...</td>\n",
+       "      <td>2</td>\n",
+       "      <td>Выполнена</td>\n",
+       "      <td>Сеть доступа</td>\n",
+       "      <td>Плановые</td>\n",
+       "      <td>11.12.2015 12:00:00</td>\n",
+       "      <td>11.12.2015 16:00:00</td>\n",
+       "      <td>Работы проведены</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>10620</th>\n",
+       "      <td>3852</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>Перезагрузка ASR-MRSH для обновления ПО (во вн...</td>\n",
+       "      <td>3</td>\n",
+       "      <td>Выполнена</td>\n",
+       "      <td>Магистральная сеть</td>\n",
+       "      <td>Плановые</td>\n",
+       "      <td>10.12.2015 04:00:00</td>\n",
+       "      <td>10.12.2015 04:15:00</td>\n",
+       "      <td>NaN</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>10621</th>\n",
+       "      <td>3849</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>Добавление А-записей на внешнем и внутреннем DNS</td>\n",
+       "      <td>3</td>\n",
+       "      <td>Выполнена</td>\n",
+       "      <td>Портал</td>\n",
+       "      <td>Плановые</td>\n",
+       "      <td>09.12.2015 15:35:00</td>\n",
+       "      <td>09.12.2015 15:36:00</td>\n",
+       "      <td>Работы проведены</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>10622</th>\n",
+       "      <td>3845</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>Аварийная коррекция настроек портала в новой с...</td>\n",
+       "      <td>1</td>\n",
+       "      <td>Выполнена</td>\n",
+       "      <td>Портал</td>\n",
+       "      <td>Аварийные</td>\n",
+       "      <td>09.12.2015 08:00:00</td>\n",
+       "      <td>09.12.2015 09:00:00</td>\n",
+       "      <td>NaN</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>10623</th>\n",
+       "      <td>3807</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>Добавление А-записи на внешнем DNS</td>\n",
+       "      <td>2</td>\n",
+       "      <td>Выполнена</td>\n",
+       "      <td>Прочее</td>\n",
+       "      <td>Плановые</td>\n",
+       "      <td>01.12.2015 12:51:00</td>\n",
+       "      <td>01.12.2015 12:55:00</td>\n",
+       "      <td>Комментарий</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "<p>10604 rows × 10 columns</p>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "            №   Город                                           Название  \\\n",
+       "0      238145  Москва  Модификация bgp ipv4 интернет пиринга с Mегафо...   \n",
+       "1      238061  Москва                             Бродкаст push-рассылка   \n",
+       "2      238047  Москва  Перевод private-apn ebgp стыков сегмента РЖД в...   \n",
+       "3      238041  Москва  Изменение параметра netauthURL для сегментов Ц...   \n",
+       "4      238027  Москва      Отключение Call ID для сегмента bus_ttm (207)   \n",
+       "...       ...     ...                                                ...   \n",
+       "10619    3887     NaN  Регламентные работы и маркировка патчкордов на...   \n",
+       "10620    3852     NaN  Перезагрузка ASR-MRSH для обновления ПО (во вн...   \n",
+       "10621    3849     NaN   Добавление А-записей на внешнем и внутреннем DNS   \n",
+       "10622    3845     NaN  Аварийная коррекция настроек портала в новой с...   \n",
+       "10623    3807     NaN                 Добавление А-записи на внешнем DNS   \n",
+       "\n",
+       "      Категория      Статус                                  Влияние  \\\n",
+       "0             3   Выполнена                          Ядро (ASR, ASA)   \n",
+       "1             3   Выполнена       Мобильные сервисы (Mobile-Cabinet)   \n",
+       "2             2  Утверждена                          Ядро (ASR, ASA)   \n",
+       "3             2  Утверждена            DNS, DHCP, Radius, Proxy, SMS   \n",
+       "4             2   Выполнена  Портал (Static, Tomсat, Redis, Unicorn)   \n",
+       "...         ...         ...                                      ...   \n",
+       "10619         2   Выполнена                             Сеть доступа   \n",
+       "10620         3   Выполнена                       Магистральная сеть   \n",
+       "10621         3   Выполнена                                   Портал   \n",
+       "10622         1   Выполнена                                   Портал   \n",
+       "10623         2   Выполнена                                   Прочее   \n",
+       "\n",
+       "       Тип работ          Дата начала       Дата окончания  \\\n",
+       "0       Плановые  06.04.2022 12:15:00  06.04.2022 13:15:00   \n",
+       "1       Плановые  05.04.2022 18:30:00  05.04.2022 19:00:00   \n",
+       "2       Плановые  06.04.2022 22:00:00  07.04.2022 00:01:00   \n",
+       "3       Плановые  06.04.2022 14:00:00  06.04.2022 15:00:00   \n",
+       "4       Плановые  06.04.2022 12:00:00  06.04.2022 12:00:00   \n",
+       "...          ...                  ...                  ...   \n",
+       "10619   Плановые  11.12.2015 12:00:00  11.12.2015 16:00:00   \n",
+       "10620   Плановые  10.12.2015 04:00:00  10.12.2015 04:15:00   \n",
+       "10621   Плановые  09.12.2015 15:35:00  09.12.2015 15:36:00   \n",
+       "10622  Аварийные  09.12.2015 08:00:00  09.12.2015 09:00:00   \n",
+       "10623   Плановые  01.12.2015 12:51:00  01.12.2015 12:55:00   \n",
+       "\n",
+       "                    Комментарий  \n",
+       "0      Работы завершены успешно  \n",
+       "1                           NaN  \n",
+       "2                           NaN  \n",
+       "3                           NaN  \n",
+       "4                           NaN  \n",
+       "...                         ...  \n",
+       "10619          Работы проведены  \n",
+       "10620                       NaN  \n",
+       "10621          Работы проведены  \n",
+       "10622                       NaN  \n",
+       "10623               Комментарий  \n",
+       "\n",
+       "[10604 rows x 10 columns]"
+      ]
+     },
+     "execution_count": 15,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#del_dupl = del_dupl.sort_values(by='Дата начала', ascending = False, ignore_index=True)\n",
+    "del_dupl"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "id": "stuck-apple",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Данные сохранены в файл export_dataframe.xlsx\n",
+      "На листе export\n",
+      "В директории /Users/Nikon/Desktop/МаксимаТелеком/Максима-ТЗ-3\n"
+     ]
+    }
+   ],
+   "source": [
+    "del_dupl.to_excel ('export_dataframe.xlsx', index = False, header=True, sheet_name= 'export')\n",
+    "print('Данные сохранены в файл export_dataframe.xlsx')\n",
+    "print('На листе export')\n",
+    "print('В директории',os.getcwd())"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "welcome-conversion",
+   "metadata": {},
+   "source": [
+    "________"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "purple-leone",
+   "metadata": {},
+   "source": [
+    "#### Проверка пропусков в данных"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "laden-confirmation",
+   "metadata": {},
+   "source": [
+    "____________"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "tough-infrastructure",
+   "metadata": {},
+   "source": [
+    "#### Обновление таблицы проверки пропусков"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "nutritional-click",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.9.1"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}

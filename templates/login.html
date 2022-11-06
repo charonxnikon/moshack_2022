@@ -13,6 +13,9 @@
 
 <body>
     <header class="header">
+        <div class="header__logo">
+            <img src="/static/img/logo.png" alt="Logo">
+        </div>
         <div class="header__login">
             <a href="/registration">Регистрация</a>
             <a href="/login">Войти</a>
@@ -20,8 +23,6 @@
     </header>
 
     <main class="main">
-        <div class="main__cover"></div>
-
         <div class="main__content">
             <form class="form" method="POST" action="/login">
                 <input type="text" class="form__input" name="login" id="login" value="admin" placeholder="Имя пользователя" required>
@@ -30,9 +31,14 @@
                 {{if ne (len .) 0}}
                     <div class="form__warning">Неверные имя пользователя или пароль!</div>
                 {{end}}
-                
+
                 <button type="submit" class="form__button">Войти</button>
             </form>
+
+            <div class="main__logos">
+                <img src="/static/img/logo1.png" alt="Logo 1">
+                <img src="/static/img/logo2.png" alt="Logo 2">
+            </div>
         </div>
     </main>
 </body>
