@@ -73,16 +73,17 @@ fill_table(table='user_apartments',
            file='example_date.csv')
 fill_table(table='db_apartments',
            file='example_db.csv')
-df = get_idxs_from_table(table='user_apartments',
-                         idxs=[1, 2, 3, 4, 5, 6, 7, 8],
-                         columns=columns_user_apartments)
-
-print(df)
-
-df = get_idxs_from_table(table='db_apartments',
-                         idxs=[1, 2, 3, 4, 5, 6, 7, 8],
-                         columns=columns_user_apartments)
-print(df)
+conn.commit()
+#df = get_idxs_from_table(table='user_apartments',
+#                         idxs=[1, 2],
+#                         columns=columns_user_apartments)
+#
+#print(df)
+#
+#df = get_idxs_from_table(table='db_apartments',
+#                         idxs=[1, 2],
+#                         columns=columns_user_apartments)
+#print(df)
 
 cur.close()
 conn.commit()

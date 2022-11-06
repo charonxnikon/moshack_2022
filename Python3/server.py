@@ -17,7 +17,7 @@ user2expert_flats = {}
 
 def recalculate_price_expert_flat_my(expert_flat_id: int,
                                      analog_idxs: tp.List[int],
-                                     needed_adjustments,
+                                     needed_adjustments: tp.Dict[str, tp.List[tp.Any]],
                                      table_expert: str,
                                      table_analogs: str) -> tp.Any:
     my_data_adjustments = deepcopy(data_adjustments)
@@ -35,6 +35,9 @@ def recalculate_price_expert_flat_my(expert_flat_id: int,
                 adjustments_not_inits[type_adj](*my_data_adjustments[type_adj])
             )
 
+    print('my_adjustments_all: ', my_adjustments_all)
+    print('type_adjustments: ', type_adjustments)
+    print('needed_adjustments', needed_adjustments)
     price, total_price = \
         recalculate_price_expert(expert_flat_id, analog_idxs,
                                  my_adjustments_all,
@@ -67,14 +70,16 @@ def get_analogs(id_flat: int) -> Result:
     
 
 def get_analogs_tmp(id_flat: int) -> tp.Any:
+#    update_coords_user_apartments(1)
     idxs, price, total_price = get_analogs_flat_idxs(id_flat)
     if idxs == []:
         return {"Analogs": [], "PriceM2": -1.0, "TotalPrice": -1.0}
     idxs_new = list(map(int, idxs))
     print('id_flat: ', id_flat)
     print('idxs : ', idxs)
-    res = recalculate_price_expert_flat_my(id_flat, idxs, adjustments_default,
+    res = recalculate_price_expert_flat_my(id_flat, idxs, data_adjustments,
                                            'user_apartments', 'db_apartments')
+    print('get_analogs_tmp: ', )
     price_m2 = res["Price"]
     total_price = res["TotalPrice"]
 
@@ -114,7 +119,7 @@ def get_idxs_pull(user_id: int, table: str) -> tp.List[int]:
     sql_get_idxs = f"""
     SELECT *
     FROM {table}
-    WHERE id = {user_id}
+    WHERE user_id = {user_id}
     """
     cur.execute(sql_get_idxs)
     pull = cur.fetchall()
@@ -145,12 +150,18 @@ def calculate_pull_my(idxs_expert_flat: tp.List[int],
     lst_all = []
     all_analogs = get_idxs_pull(user_id, 'user_apartments')
     print('all_analogs: ', all_analogs)
-    print('idx_analogs: ', all_analogs)
-    idx_analogs = list(set(all_analogs) - set(idxs_expert_flat))
+    idx_analogs = []
+    for idx in all_analogs:
+        print(idx, idxs_expert_flat)
+        if int(idx) not in idxs_expert_flat:
+            idx_analogs.append(idx)
+#    idx_analogs = list(set(all_analogs) - set(idxs_expert_flat))
+    print('idx_analogs: ', idx_analogs)
 
     for idx_expert_flat in idxs_expert_flat:
         result = calculate_pull_one_expert(idx_expert_flat, idx_analogs,
                                            needed_adjustments)
+        print(result)
         lst_all.append(result)
 
     all_data = np.array(lst_all)
@@ -186,10 +197,10 @@ if __name__ == "__main__":
     # print('final: ', tmp([1, 2], [3, 4, 5, 6, 7], {"tender": [-0.06]}))
 
     #    idxs, price, total_price = get_analogs_flat_idxs(1)
-    print(get_analogs_tmp(7))
-    print(calculate_pull_my([1, 2, 8], 1, {"tender": [-0.06]}))
-    print(recalculate_price_expert_flat(1, [2, 3, 4], {"tender": [-0.06]}))
-    #print(update_coords_user_apartments(1))
+#    print(get_analogs_tmp(7))
+#    print(calculate_pull_my([1, 2, 8], 1, {"tender": [-0.06]}))
+#    print(recalculate_price_expert_flat(1, [2, 3, 4], {"tender": [-0.06]}))
+#    #print(update_coords_user_apartments(1))
 
 
     try:

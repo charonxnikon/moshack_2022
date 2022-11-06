@@ -18,8 +18,9 @@ columns = ["id", "user_id", "address", "rooms", "type",
 condition2code = {
     'Без отделки': 0,
     'Муниципальный ремонт': 1,
-    'Современная отделка': 2
+    'Современное жилье': 2
 }
+
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -118,7 +119,6 @@ class AdjustmentGeneral:
         if abs(index_expert - index_analog) >= 3:
             carefully = True
 
-
         return self.adjustment_matr[index_expert][index_analog], carefully
 
 
@@ -134,8 +134,9 @@ class AdjustmentRepair:
     def calculate(self, expert, analog):
         index_expert = self._calculate_index(expert)
         index_analog = self._calculate_index(analog)
+        print("EXPERT HERE")
 
-        return self.adjustment_matr[index_expert][index_analog]\
+        return self.adjustment_matr[index_expert][index_analog] \
                / float(analog.price_m2), False
 
 
@@ -247,10 +248,12 @@ class PullFlats:
         expert_price_sq_meter = float(analog_price_sq_meter)
         percent_corrects = 0
         counts_carefully = 0
+        print('calcualte_analog_price: ')
+        print('needed_adjustments: ', self.needed_adjustments)
         for i, adjustment in enumerate(self.needed_adjustments):
             print(type_adjustments[i], end=': ')
             # before this not here be
-#            analog.price_m2 = expert_price_sq_meter
+            #            analog.price_m2 = expert_price_sq_meter
             analog.at["price_m2"] = expert_price_sq_meter
             percent, carefully = adjustment.calculate(expert, analog)
             counts_carefully += int(carefully)
@@ -262,7 +265,8 @@ class PullFlats:
             percent_corrects += abs(percent)
 
         # before this not here be
-        analog.at["price_m2"] = analog_price_sq_meter
+        from copy import deepcopy
+        analog.at["price_m2"] = deepcopy(analog_price_sq_meter)
         total_price = expert_price_sq_meter * float(analog.area)
 
         return total_price, expert_price_sq_meter, percent_corrects, counts_carefully
@@ -295,11 +299,10 @@ class PullFlats:
             print('weights: ', weights)
             return weights, prices_sq_meter_analogs, \
                    prices_total_analogs, counts_carefully
-        inv_percent_corrects = min_correct / percent_corrects
+        inv_percent_corrects = min_correct / np.array(percent_corrects)
         inv_sum = 1 / np.sum(inv_percent_corrects)
         return inv_percent_corrects * inv_sum, \
-                prices_sq_meter_analogs, prices_total_analogs, counts_carefully
-
+               prices_sq_meter_analogs, prices_total_analogs, counts_carefully
 
     def calculate_pull(self, expert_flat, pull_analogs):
         """
@@ -342,14 +345,15 @@ def recalculate_price_expert(expert_idx: int,
     :return:
     """
     expert_flat = get_idxs_from_table(table_expert, [expert_idx])
+    expert_flat = expert_flat.iloc[0, :]
+    print('type_expert_flat: ', type(expert_flat))
     analogs_flat = get_idxs_from_table(table_analogs, analogs_idxs)
-#    all_flats = pd.concat([expert_flat, analogs_flat])
-#    pull_flats_df = pd.DataFrame.from_dict(all_flats)
+    #    all_flats = pd.concat([expert_flat, analogs_flat])
+    #    pull_flats_df = pd.DataFrame.from_dict(all_flats)
     pull_flats = PullFlats(needed_adjustments=adjustments)
-#    pull_flats_df = pull_flats_df.reset_index().set_index('id')
+    #    pull_flats_df = pull_flats_df.reset_index().set_index('id')
 
     return pull_flats.calculate_pull(expert_flat, analogs_flat)
-
 
 # pull_flats_df = pd.DataFrame.from_dict(data_flats)
 # pull_flats = PullFlats(needed_adjustments=adjustments_all)
