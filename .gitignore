@@ -6,3 +6,4 @@ node_modules/
 Python3/.ipynb_checkpoints/
 Python3/.idea/
 Python3/__pycache__
+Python3/venv/

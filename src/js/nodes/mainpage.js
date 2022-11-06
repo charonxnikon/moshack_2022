@@ -1,4 +1,5 @@
 require("./../../css/modules/mainpage.scss");
+// require('vue-slider-component/theme/default.css');
 
 import Vue from 'vue';
 

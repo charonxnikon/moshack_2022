@@ -21,13 +21,10 @@
             :getSelectedLines="getSelectedLines">
         </table-view>
 
-        <div v-if="showMaps" class="maps">
-            <map-view
-                v-for="(item, index) in selectedItems"
-                :key="index"
-                :data="item">
-            </map-view>
-        </div>
+        <map-view
+            v-if="showMaps"
+            :data="selectedItems">
+        </map-view>
     </div>
 </template>
 
