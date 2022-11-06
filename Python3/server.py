@@ -104,13 +104,13 @@ def recalculate_price_expert_flat(id: int,
     analog_idxs = analogs
 
     needed_adjustments = {
-        "tender": (np.array(tender) / 100).tolist(),
-        "floor": (np.array(floor) / 100).tolist(),
-        "area": (np.array(area) / 100).tolist(),
-        "kitchen": (np.array(kitchen) / 100).tolist(),
-        "balcony": (np.array(balcony) / 100).tolist(),
-        "metro": (np.array(metro) / 100).tolist(),
-        "condition": (np.array(condition) / 100).tolist()
+        "tender": [np.array((np.array(tender) / 100).tolist())],
+        "floor": [np.array((np.array(floor) / 100).tolist())],
+        "area": [np.array((np.array(area) / 100).tolist())],
+        "kitchen": [np.array((np.array(kitchen) / 100).tolist())],
+        "balcony": [np.array((np.array(balcony) / 100).tolist())],
+        "metro": [np.array((np.array(metro) / 100).tolist())],
+        "condition": [np.array((np.array(condition)).tolist())]
     }
     result = recalculate_price_expert_flat_my(expert_flat_id, analog_idxs,
                                               needed_adjustments,
@@ -133,13 +133,13 @@ def calculate_pull_one_expert(id_expert_flat: int,
                               condition: tp.List[tp.List[int]]) -> Result:
 
     needed_adjustments = {
-        "tender": (np.array(tender) / 100).tolist(),
-        "floor": (np.array(floor) / 100).tolist(),
-        "area": (np.array(area) / 100).tolist(),
-        "kitchen": (np.array(kitchen) / 100).tolist(),
-        "balcony": (np.array(balcony) / 100).tolist(),
-        "metro": (np.array(metro) / 100).tolist(),
-        "condition": (np.array(condition) / 100).tolist()
+        "tender": [np.array((np.array(tender) / 100).tolist())],
+        "floor": [np.array((np.array(floor) / 100).tolist())],
+        "area": [np.array((np.array(area) / 100).tolist())],
+        "kitchen": [np.array((np.array(kitchen) / 100).tolist())],
+        "balcony": [np.array((np.array(balcony) / 100).tolist())],
+        "metro": [np.array((np.array(metro) / 100).tolist())],
+        "condition": [np.array((np.array(condition)).tolist())]
     }
     lst_price_total_price = []
     for idx_analog in idx_analogs:
