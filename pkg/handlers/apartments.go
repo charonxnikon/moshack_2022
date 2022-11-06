@@ -125,6 +125,7 @@ func (h *ApartmentHandler) Table(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ApartmentHandler) Estimate(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("In Estimate") //
 	type ApartmentID struct {
 		Id uint32
 	}
@@ -141,6 +142,8 @@ func (h *ApartmentHandler) Estimate(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	fmt.Println("apartmentID", apartmentID) //
 
 	type AnalogsPrices struct {
 		Analogs    []uint32 `json:"Analogs"`
@@ -200,7 +203,8 @@ func (h *ApartmentHandler) Estimate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ApartmentHandler) Reestimate(w http.ResponseWriter, r *http.Request) {
-	type AnalogsAdjastments struct {
+	fmt.Println("In reestimate") //
+	type AnalogsAdjustments struct {
 		Id        uint32        `json:"id"`
 		Analogs   []uint32      `json:"analogs"`
 		Tender    [1]float64    `json:"tender"`
@@ -211,7 +215,7 @@ func (h *ApartmentHandler) Reestimate(w http.ResponseWriter, r *http.Request) {
 		Metro     [6][6]float64 `json:"metro"`
 		Condition [3][3]float64 `json:"condition"`
 	}
-	var rParams AnalogsAdjastments
+	var rParams AnalogsAdjustments
 	rData, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -225,12 +229,23 @@ func (h *ApartmentHandler) Reestimate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	fmt.Println("rData", string(rData)) //
+	fmt.Println("rParams", rParams)     //
+
 	response, err := h.JSONrpcClient.Call("recalculate_price_expert_flat", &rParams)
 	if err != nil {
-		fmt.Println(err) //
+		fmt.Println("error", err) //
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	fmt.Println("response", response) //
+	if response.Result == nil {
+		fmt.Println("Empty result: nil") //
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	data, ok := response.Result.(string)
 	if !ok {
 		fmt.Println("not string - ", response.Result) //
