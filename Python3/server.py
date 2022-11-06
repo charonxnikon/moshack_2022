@@ -90,8 +90,8 @@ def get_analogs_tmp(id_flat: int) -> tp.Any:
 
 
 @method
-def recalculate_price_expert_flat(expert_flat_id: int,
-                                  analog_idxs: tp.List[int],
+def recalculate_price_expert_flat(id: int,
+                                  analogs: tp.List[int],
                                   tender: tp.List[tp.List[int]],
                                   floor: tp.List[tp.List[int]],
                                   area: tp.List[tp.List[int]],
@@ -100,14 +100,17 @@ def recalculate_price_expert_flat(expert_flat_id: int,
                                   metro: tp.List[tp.List[int]],
                                   condition: tp.List[tp.List[int]]) -> Result:
 
+    expert_flat_id = id
+    analog_idxs = analogs
+
     needed_adjustments = {
-        "tender": tender,
-        "floor": floor,
-        "area": area,
-        "kitchen": kitchen,
-        "balcony": balcony,
-        "metro": metro,
-        "condition": condition
+        "tender": np.array(tender) / 100,
+        "floor": np.array(floor) / 100,
+        "area": np.array(area) / 100,
+        "kitchen": np.array(kitchen) / 100,
+        "balcony": np.array(balcony) / 100,
+        "metro": np.array(metro) / 100,
+        "condition": np.array(condition) / 100
     }
     result = recalculate_price_expert_flat_my(expert_flat_id, analog_idxs,
                                               needed_adjustments,
@@ -121,7 +124,23 @@ def recalculate_price_expert_flat(expert_flat_id: int,
 
 def calculate_pull_one_expert(id_expert_flat: int,
                               idx_analogs: tp.List[int],
-                              needed_adjustments):
+                              tender: tp.List[tp.List[int]],
+                              floor: tp.List[tp.List[int]],
+                              area: tp.List[tp.List[int]],
+                              kitchen: tp.List[tp.List[int]],
+                              balcony: tp.List[tp.List[int]],
+                              metro: tp.List[tp.List[int]],
+                              condition: tp.List[tp.List[int]]) -> Result:
+
+    needed_adjustments = {
+        "tender": np.array(tender) / 100,
+        "floor": np.array(floor) / 100,
+        "area": np.array(area) / 100,
+        "kitchen": np.array(kitchen) / 100,
+        "balcony": np.array(balcony) / 100,
+        "metro": np.array(metro) / 100,
+        "condition": np.array(condition) / 100
+    }
     lst_price_total_price = []
     for idx_analog in idx_analogs:
         dct = recalculate_price_expert_flat_my(idx_analog,
