@@ -266,6 +266,7 @@ func (h *ApartmentHandler) EstimateAll(w http.ResponseWriter, r *http.Request) {
 	// мб сразу формируем ексель и предлагаем скачать бесплатно без смс и регистрации?
 	type UserIDAdjastments struct {
 		UserID    uint32        `json:"user_id"`
+		Samples   []uint32      `json:"idxs_expert_flat"`
 		Tender    [1]float64    `json:"tender"`
 		Floor     [3][3]float64 `json:"floor"`
 		Area      [6][6]float64 `json:"area"`
