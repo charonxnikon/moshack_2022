@@ -28,28 +28,23 @@ func MarshalApartments(apartments []*UserApartment) []byte {
 	var jsonApartments []ApartmentJSON
 	for _, el := range apartments {
 		jsonApartments = append(jsonApartments, ApartmentJSON{
-			UserID:  el.UserID,
-			Address: el.Address,
-			Rooms:   el.Rooms,
-			//Type: apartmentTypes.Type.GetJSON(el.Type),
-			Type:   el.Type,
-			Height: el.Height,
-			//Material:    apartmentTypes.Material.GetJSON(el.Material),
-			Material: el.Material,
-			Floor:    el.Floor,
-			Area:     el.Area,
-			Kitchen:  el.Kitchen,
-			//Balcony:         apartmentTypes.Balcony.GetJSON(el.Balcony),
-			Balcony: el.Balcony,
-			Metro:   el.Metro,
-			//Condition:       apartmentTypes.Condition.GetJSON(el.Condition),
+			UserID:    el.UserID,
+			Address:   el.Address,
+			Rooms:     el.Rooms,
+			Type:      el.Type,
+			Height:    el.Height,
+			Material:  el.Material,
+			Floor:     el.Floor,
+			Area:      el.Area,
+			Kitchen:   el.Kitchen,
+			Balcony:   el.Balcony,
+			Metro:     el.Metro,
 			Condition: el.Condition,
 			Latitude:  el.Latitude,
 			Longitude: el.Longitude,
 		})
 	}
 	data, _ := json.Marshal(respBody{Apartments: jsonApartments})
-	//MORE READABLE FORMAT:
-	//data, _ := json.MarshalIndent(respBody{Apartments: jsonApartments}, "", "\t")
+
 	return data
 }

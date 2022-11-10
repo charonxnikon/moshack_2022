@@ -2,13 +2,10 @@ package main
 
 import (
 	"html/template"
+	"log"
 
-	// "mime/multipart"
-	// "moshack_2022/pkg/apartments/excelParser"
 	"moshack_2022/pkg/apartments"
 	"moshack_2022/pkg/handlers"
-
-	//	"os"
 
 	"moshack_2022/pkg/middleware"
 	"moshack_2022/pkg/session"
@@ -26,44 +23,22 @@ import (
 func main() {
 
 	templates := template.Must(template.ParseGlob("./templates/*.html"))
-	//templates := template.Must(template.ParseGlob("../../templates/*.html")) // for testing
 
-	// TODO - нормальная конфигурация
 	dsn := "host=localhost user=postgres password=3546"
 	dsn += " dbname=moshack port=5432 sslmode=disable"
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		panic(err) // TODO
+		log.Fatal(err)
 	}
 	sqlDB, err := db.DB()
 	if err != nil {
-		panic(err) // TODO
+		log.Fatal(err)
 	}
 	err = sqlDB.Ping()
 	if err != nil {
-		panic(err) // TODO
+		log.Fatal(err)
 	}
-
-	// if len(os.Args) > 1 {
-	// 	excelParser.MakeXLSX(db.Table("db_apartments"), false, "MyNewXLSX.XLSX")
-	// 	//return
-	// 	file, err := os.Open("test.xlsx")
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
-	// 	aparts, err := excelParser.ParseXLSX(multipart.File(file), 15)
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
-
-	// 	for _, apart := range aparts {
-	// 		db.Table("db_apartments").Create(apart)
-	// 	}
-
-	// 	println(string(apartments.MarshalApartments(aparts)))
-	// 	return
-	// }
 
 	sm := session.NewSessionsManager()
 	zapLogger, _ := zap.NewProduction()
@@ -81,10 +56,7 @@ func main() {
 	apartmentRepo := apartments.NewApartmentRepo(db)
 
 	rpcClient := jsonrpc.NewClient("http://localhost:5000")
-	if err != nil {
-		logger.Error("No connection to python -", err)
-		//panic(err) // TODO
-	}
+
 	apartmentHandler := &handlers.ApartmentHandler{
 		Tmpl:          templates,
 		Logger:        logger,
@@ -96,7 +68,7 @@ func main() {
 	r := mux.NewRouter()
 
 	fileServer := http.StripPrefix("/static/", http.FileServer(http.Dir("./static/")))
-	//fileServer := http.StripPrefix("/static/", http.FileServer(http.Dir("../../static/"))) // for testing
+
 	r.PathPrefix("/static/").Handler(fileServer)
 
 	r.HandleFunc("/", userHandler.Index).Methods("GET")
@@ -126,5 +98,6 @@ func main() {
 		"type", "START",
 		"addr", addr,
 	)
+
 	http.ListenAndServe(addr, mux)
 }

@@ -25,22 +25,6 @@ type UserHandler struct {
 
 func (h *UserHandler) Index(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/login", http.StatusFound)
-
-	// _, err := session.SessionFromContext(r.Context())
-	// if err == nil {
-	// 	http.Redirect(w, r, "/loadxls", http.StatusFound)
-	// 	return
-	// }
-
-	// // так или как закомментированно ниже?
-	// err = h.Tmpl.ExecuteTemplate(w, "login.html", nil)
-
-	// //	err = renderer.Render(h.Tmpl, "mainpage.html", w, nil) // ?
-	// if err != nil {
-	// 	errString := fmt.Sprintf("Template error: %s", err)
-	// 	http.Error(w, errString, http.StatusInternalServerError)
-	// 	return
-	// }
 }
 
 func (h *UserHandler) LoginGET(w http.ResponseWriter, r *http.Request) {

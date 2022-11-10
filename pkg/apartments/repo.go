@@ -22,7 +22,6 @@ func NewApartmentRepo(db *gorm.DB) *ApartmentDB {
 
 func (adb *ApartmentDB) GetUserApartmentByID(id uint32) (*UserApartment, error) {
 	aparts := make([]UserApartment, 0)
-	// db := adb.db.Where("id = ?", id).Find(&aparts)
 	db := adb.db.Table(userApartmentsTable).Where("id = ?", id).Find(&aparts)
 	if db.Error != nil {
 		return nil, db.Error
@@ -36,7 +35,6 @@ func (adb *ApartmentDB) GetUserApartmentByID(id uint32) (*UserApartment, error) 
 
 func (adb *ApartmentDB) GetDBApartmentByID(id uint32) (*DBApartment, error) {
 	aparts := make([]DBApartment, 0)
-	// db := adb.db.Where("id = ?", id).Find(&aparts)
 	db := adb.db.Table(dbApartmentsTable).Where("id = ?", id).Find(&aparts)
 	if db.Error != nil {
 		return nil, db.Error

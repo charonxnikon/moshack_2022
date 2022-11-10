@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"net/http"
 
 	"moshack_2022/pkg/session"
@@ -27,7 +26,6 @@ func Auth(sm *session.SessionsManager, next http.Handler) http.Handler {
 		sess, err := sm.Check(r)
 		_, canbeWithouthSess := noSessUrls[r.URL.Path]
 		if err != nil && !canbeWithouthSess {
-			fmt.Println("No session") //
 			http.Redirect(w, r, "/", http.StatusFound)
 			return
 		}

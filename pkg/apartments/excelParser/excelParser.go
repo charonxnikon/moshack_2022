@@ -9,17 +9,11 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/shakinm/xlsReader/xls"
 	"github.com/tealeg/xlsx"
 	"github.com/xuri/excelize/v2"
 	"gorm.io/gorm"
-
-	"github.com/shakinm/xlsReader/xls"
 )
-
-// TODO: по-хорошему, надо быпереписать так, чтобы можно было легко расширять набор свойств из подпакетов
-//Ожидаемый вид таблицы: ...| (номер столбца) Информация |
-//(0) Адрес |(1) Кол-во комнат |(2) Тип здания |(3) Кол-во этажей |(4) Материал стен |(5) Этаж квартиры |(6) Площадь квартиры |
-//|(7) Площадь кухни |(8) Тип балкона |(9) Удаленность от метро | (10) Состояние |  |  |  |  |
 
 type ExcelParser struct {
 	FileName   string
@@ -61,10 +55,10 @@ func ParseXLSX(file multipart.File, userID uint32) ([]*apartments.UserApartment,
 
 	result := make([]*apartments.UserApartment, 0)
 	rows, err := xlsFile.GetRows(xlsFile.GetSheetName(0))
-	//rows, err := xlsFile.GetRows("Лист1")
 	if err != nil {
 		return nil, err
 	}
+
 	for rowNum, row := range rows {
 		if err != nil {
 			return nil, err
@@ -105,21 +99,17 @@ func ParseXLSX(file multipart.File, userID uint32) ([]*apartments.UserApartment,
 		}
 
 		newApartment := &apartments.UserApartment{
-			UserID:  userID,
-			Address: row[0],
-			Rooms:   row[1],
-			//Type: apartmentTypes.Type.GetState(row[2].GetString()),
-			Type:   row[2],
-			Height: int16(floors),
-			//Material:    apartmentTypes.Material.GetState(row[4].GetString()),
-			Material: row[4],
-			Floor:    int16(floor),
-			Area:     aSquare,
-			Kitchen:  kSquare,
-			//Balcony:         apartmentTypes.Balcony.GetState(row[8].GetString()),
-			Balcony: row[8],
-			Metro:   metroRemotneness,
-			//Condition:       apartmentTypes.Condition.GetState(row[10].GetString()),
+			UserID:    userID,
+			Address:   row[0],
+			Rooms:     row[1],
+			Type:      row[2],
+			Height:    int16(floors),
+			Material:  row[4],
+			Floor:     int16(floor),
+			Area:      aSquare,
+			Kitchen:   kSquare,
+			Balcony:   row[8],
+			Metro:     metroRemotneness,
 			Condition: row[10],
 		}
 
@@ -179,21 +169,17 @@ func ParseXLS(file multipart.File, userID uint32) ([]*apartments.UserApartment, 
 		}
 
 		newApartment := &apartments.UserApartment{
-			UserID:  userID,
-			Address: cells[0].GetString(),
-			Rooms:   cells[1].GetString(),
-			//Type: apartmentTypes.Type.GetState(cells[2].GetString()),
-			Type:   cells[2].GetString(),
-			Height: int16(floors),
-			//Material:    apartmentTypes.Material.GetState(cells[4].GetString()),
-			Material: cells[4].GetString(),
-			Floor:    int16(floor),
-			Area:     aSquare,
-			Kitchen:  kSquare,
-			//Balcony:         apartmentTypes.Balcony.GetState(cells[8].GetString()),
-			Balcony: cells[8].GetString(),
-			Metro:   metroRemotneness,
-			//Condition:       apartmentTypes.Condition.GetState(cells[10].GetString()),
+			UserID:    userID,
+			Address:   cells[0].GetString(),
+			Rooms:     cells[1].GetString(),
+			Type:      cells[2].GetString(),
+			Height:    int16(floors),
+			Material:  cells[4].GetString(),
+			Floor:     int16(floor),
+			Area:      aSquare,
+			Kitchen:   kSquare,
+			Balcony:   cells[8].GetString(),
+			Metro:     metroRemotneness,
 			Condition: cells[10].GetString(),
 		}
 
@@ -202,20 +188,6 @@ func ParseXLS(file multipart.File, userID uint32) ([]*apartments.UserApartment, 
 
 	return result, nil
 }
-
-// func OpenExcel(name string) *xls.Sheet {
-// 	excelFile, err := xls.OpenFile(name)
-// 	if err != nil {
-// 		fmt.Println("@@excelFileErr@@")
-// 		log.Panic(err.Error())
-// 	}
-// 	excelSheet, err := excelFile.GetSheet(0)
-// 	if err != nil {
-// 		fmt.Println("@@exclerSheetErr@@")
-// 		log.Panic(err.Error())
-// 	}
-// 	return excelSheet
-// }
 
 func UnparseXLSX(aparts []apartments.UserApartment) (*xlsx.File, error) {
 	file := xlsx.NewFile()
@@ -294,10 +266,6 @@ func MakeXLSX_OLD(db *gorm.DB, localSave bool, filePath string) (interface{}, er
 		err = f.Save(filePath)
 	}
 
-	//эта функция пишет ексель в ои райтер
-	//f.Write(writer io.Writer)
-	//если это не поможет, то лучше сохранить файл локально, и отправить из него
-	//для удаления локального файла:
 	if false {
 		err := os.Remove(filePath)
 		if err != nil {
